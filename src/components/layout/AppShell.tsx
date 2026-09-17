@@ -32,6 +32,7 @@ import { ITask } from "@/types";
 import { useApi } from "@/lib/api/useApi";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { toast } from "sonner";
+import { taskSync } from "@/lib/events/taskSync";
 
 export function AppShell() {
   const { user, firebaseUser, loading: authLoading } = useAuth();
@@ -54,6 +55,7 @@ export function AppShell() {
   const [focusTask, setFocusTask] = useState<ITask | null>(null);
   const [taskToReschedule, setTaskToReschedule] = useState<ITask | null>(null);
   const [taskToEdit, setTaskToEdit] = useState<ITask | null>(null);
+  const [defaultTaskDate, setDefaultTaskDate] = useState<string | null>(null);
 
   const { apiFetch } = useApi();
 
@@ -69,6 +71,10 @@ export function AppShell() {
 
   useEffect(() => {
     loadTasksForShell();
+    const unsubscribe = taskSync.subscribe(() => {
+      loadTasksForShell();
+    });
+    return unsubscribe;
   }, [currentTab]);
 
   useEffect(() => {
@@ -239,14 +245,21 @@ export function AppShell() {
                   onReschedule={(task) => setTaskToReschedule(task)}
                   onOpenNewTask={() => {
                     setTaskToEdit(null);
+                    setDefaultTaskDate(null);
                     setIsNewTaskOpen(true);
                   }}
                 />
               ) : (
                 <WeeklyPlannerView
                   onStartFocus={(task) => setFocusTask(task)}
-                  onOpenNewTask={() => {
+                  onOpenNewTask={(dateStr) => {
                     setTaskToEdit(null);
+                    setDefaultTaskDate(dateStr || null);
+                    setIsNewTaskOpen(true);
+                  }}
+                  onEditTask={(task) => {
+                    setTaskToEdit(task);
+                    setDefaultTaskDate(task.scheduledDate || null);
                     setIsNewTaskOpen(true);
                   }}
                 />
@@ -326,10 +339,12 @@ export function AppShell() {
       <TaskModal
         isOpen={isNewTaskOpen}
         taskToEdit={taskToEdit}
+        defaultDate={defaultTaskDate}
         existingTasks={allPendingTasks}
         onClose={() => {
           setIsNewTaskOpen(false);
           setTaskToEdit(null);
+          setDefaultTaskDate(null);
         }}
         onSaved={loadTasksForShell}
       />

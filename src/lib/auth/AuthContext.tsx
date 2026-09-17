@@ -15,6 +15,7 @@ import {
   getRedirectResult,
 } from "@/lib/firebase/client";
 import { IUser } from "@/types";
+import { toast } from "sonner";
 
 interface AuthContextType {
   user: IUser | null;
@@ -32,6 +33,31 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+function parseFirebaseAuthError(err: any): string {
+  const code = err?.code || "";
+  const currentHost = typeof window !== "undefined" ? window.location.hostname : "your deployed domain";
+
+  if (code === "auth/unauthorized-domain") {
+    return `Production domain not authorized ("${currentHost}"). In Firebase Console > Authentication > Settings > Authorized domains, click "Add domain" and add "${currentHost}".`;
+  }
+  if (code === "auth/api-key-not-valid" || code === "auth/invalid-api-key") {
+    return "Firebase API Key is missing or invalid. Check that NEXT_PUBLIC_FIREBASE_* variables are configured in your deployment settings (e.g. Vercel dashboard).";
+  }
+  if (code === "auth/operation-not-allowed") {
+    return "Google Sign-In is disabled. In Firebase Console > Authentication > Sign-in method, enable Google.";
+  }
+  if (code === "auth/popup-closed-by-user") {
+    return "Google sign-in was cancelled (window closed).";
+  }
+  if (code === "auth/account-exists-with-different-credential") {
+    return "An account already exists with this email. Please sign in with your email/password.";
+  }
+  if (code === "auth/network-request-failed") {
+    return "Network error. Please check your internet connection.";
+  }
+  return err?.message || "Google authentication failed. Please try again.";
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<IUser | null>(null);
@@ -106,6 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       .catch((err) => {
         console.warn("Redirect sign-in error:", err);
+        toast.error(parseFirebaseAuthError(err));
       });
 
     // 2. Subscribe to persistent Firebase Auth state across browser restarts
@@ -217,15 +244,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchUserProfile(token);
       }
     } catch (err: any) {
-      if (err.code === "auth/popup-closed-by-user") {
-        throw new Error("Google sign-in was cancelled (window closed).");
-      } else if (err.code === "auth/account-exists-with-different-credential") {
-        throw new Error("An account already exists with this email address. Please sign in with your email/password.");
-      } else if (err.code === "auth/network-request-failed") {
-        throw new Error("Network error. Please check your internet connection.");
-      } else {
-        throw new Error(err.message || "Google authentication failed.");
-      }
+      throw new Error(parseFirebaseAuthError(err));
     } finally {
       setLoading(false);
     }

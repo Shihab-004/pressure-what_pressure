@@ -9,6 +9,8 @@ import { TaskCard } from "./TaskCard";
 import { QuickAddBar } from "./QuickAddBar";
 import { isTaskBlocked } from "@/lib/engine/recommendationEngine";
 import { SpiderLogo } from "@/components/icons/SpiderLogo";
+import { taskSync } from "@/lib/events/taskSync";
+import { TaskCardSkeleton } from "@/components/ui/Skeleton";
 
 interface TasksViewProps {
   onStartFocus: (task: ITask) => void;
@@ -33,12 +35,16 @@ export function TasksView({
 
   useEffect(() => {
     loadTasks();
+    const unsubscribe = taskSync.subscribe(() => {
+      loadTasks(true);
+    });
+    return unsubscribe;
   }, []);
 
-  async function loadTasks() {
-    setLoading(true);
+  async function loadTasks(silent = false) {
+    if (!silent) setLoading(true);
     const { data, error } = await apiFetch("/api/tasks");
-    setLoading(false);
+    if (!silent) setLoading(false);
 
     if (error) {
       toast.error(error);
@@ -66,6 +72,7 @@ export function TasksView({
       loadTasks();
     } else {
       toast.success(isComp ? "Task reopened" : "Task completed!");
+      taskSync.notify({ type: "task:completed", taskId: task._id });
     }
   }
 
@@ -73,6 +80,7 @@ export function TasksView({
     setTasks((prev) => prev.filter((t) => t._id !== taskId));
     await apiFetch(`/api/tasks/${taskId}`, { method: "DELETE" });
     toast.info("Task deleted");
+    taskSync.notify({ type: "task:deleted", taskId });
   }
 
   // Filter tasks
@@ -213,9 +221,10 @@ export function TasksView({
 
       {/* Task List */}
       {loading ? (
-        <div className="py-20 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2">
-          <RefreshCw className="w-5 h-5 text-primary animate-spin" />
-          <span>Synchronizing registry...</span>
+        <div className="space-y-3">
+          {[0, 1, 2, 3].map((idx) => (
+            <TaskCardSkeleton key={idx} />
+          ))}
         </div>
       ) : filteredTasks.length === 0 ? (
         <div className="spider-card p-10 text-center space-y-2.5">

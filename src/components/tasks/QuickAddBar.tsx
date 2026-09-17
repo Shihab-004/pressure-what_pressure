@@ -6,6 +6,7 @@ import { Plus, Clock, Calendar, Tag, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useApi } from "@/lib/api/useApi";
 import { formatDateLabel } from "@/lib/utils";
+import { taskSync } from "@/lib/events/taskSync";
 
 interface QuickAddBarProps {
   onTaskCreated?: () => void;
@@ -59,6 +60,7 @@ export function QuickAddBar({ onTaskCreated, className = "", defaultCategory }: 
     } else {
       toast.success(`Captured: "${parsed.title}"`);
       setText("");
+      taskSync.notify({ type: "task:created" });
       if (onTaskCreated) onTaskCreated();
     }
   }

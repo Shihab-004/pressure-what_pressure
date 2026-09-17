@@ -25,6 +25,7 @@ import { formatMinutes, formatDateLabel } from "@/lib/utils";
 import { QuickAddBar } from "@/components/tasks/QuickAddBar";
 import { SpiderLogo } from "@/components/icons/SpiderLogo";
 import { format } from "date-fns";
+import { taskSync } from "@/lib/events/taskSync";
 
 interface CommandCenterProps {
   onTriggerWhatShouldIDo: () => void;
@@ -53,10 +54,14 @@ export function CommandCenter({
 
   useEffect(() => {
     loadDashboardData();
+    const unsubscribe = taskSync.subscribe(() => {
+      loadDashboardData(true);
+    });
+    return unsubscribe;
   }, []);
 
-  async function loadDashboardData() {
-    setLoading(true);
+  async function loadDashboardData(silent = false) {
+    if (!silent) setLoading(true);
 
     // 1. Load today's tasks
     const todayRes = await apiFetch("/api/tasks/today");
@@ -94,7 +99,7 @@ export function CommandCenter({
       setCurrentGoal(active || goalsRes.data.goals[0]);
     }
 
-    setLoading(false);
+    if (!silent) setLoading(false);
   }
 
   // Workload calculations
@@ -153,7 +158,7 @@ export function CommandCenter({
               Execution Sequence
             </h2>
             <button
-              onClick={loadDashboardData}
+              onClick={() => loadDashboardData()}
               className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
             >
               <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin text-primary" : ""}`} />

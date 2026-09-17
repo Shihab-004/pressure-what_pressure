@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Settings, User, Sliders, Database, LogOut, Check, Loader2, Sparkles } from "lucide-react";
+import { Settings, User, Sliders, Database, LogOut, Check, Loader2, Sparkles, AlertTriangle, Trash2, ShieldCheck, Lock, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useApi } from "@/lib/api/useApi";
 import { toast } from "sonner";
@@ -17,6 +17,15 @@ export function SettingsView() {
   );
   const [saving, setSaving] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [resetConfirmation, setResetConfirmation] = useState("");
+  const [resetting, setResetting] = useState(false);
+
+  const isDemo =
+    isDemoUser ||
+    user?.firebaseUid?.startsWith("demo_") ||
+    user?.email === "demo@personalos.local" ||
+    user?.email?.includes("demo");
 
   async function handleSavePreferences(e: React.FormEvent) {
     e.preventDefault();
@@ -50,9 +59,14 @@ export function SettingsView() {
   }
 
   async function handleSeedData() {
+    if (!isDemo) {
+      toast.error("Sample datasets can only be loaded in Dummy/Demo mode to protect your personal account data.");
+      return;
+    }
+
     if (
       !confirm(
-        "This will initialize/replace sample University courses, Rover project, ROS2 learning roadmap, and test tasks for your workspace. Proceed?"
+        "This will initialize/replace sample University courses, Rover project, ROS2 learning roadmap, and test tasks for this demo workspace. Proceed?"
       )
     ) {
       return;
@@ -66,6 +80,29 @@ export function SettingsView() {
       toast.error(error);
     } else {
       toast.success(data?.message || "Sample engineering workspace seeded successfully!");
+      window.location.reload();
+    }
+  }
+
+  async function handleResetWorkspace() {
+    if (resetConfirmation.trim() !== "RESET") {
+      toast.error('Please type "RESET" in all caps to confirm.');
+      return;
+    }
+
+    setResetting(true);
+    const { data, error } = await apiFetch("/api/workspace/reset", {
+      method: "POST",
+      body: JSON.stringify({ confirmation: "RESET" }),
+    });
+    setResetting(false);
+
+    if (error) {
+      toast.error(error);
+    } else {
+      toast.success(data?.message || "Workspace reset successfully!");
+      setResetModalOpen(false);
+      setResetConfirmation("");
       window.location.reload();
     }
   }
@@ -170,25 +207,124 @@ export function SettingsView() {
         </div>
       </form>
 
-      {/* Development Seed Data Action */}
-      <div className="p-6 rounded-2xl bg-card border border-primary/30 shadow-specular-card space-y-3.5">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-primary" />
-          <h2 className="text-base font-bold text-foreground">Sample Workspace Datasets</h2>
+      {/* Sample Workspace Datasets Action - Only available on Demo accounts */}
+      <div className="p-6 rounded-2xl bg-card border border-border/80 shadow-specular-card space-y-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Database className="w-4 h-4 text-primary" />
+            <h2 className="text-base font-bold text-foreground">Sample Workspace Datasets</h2>
+          </div>
+          {isDemo ? (
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              Demo Mode Active
+            </span>
+          ) : (
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1">
+              <Lock className="w-3 h-3" />
+              Demo Only
+            </span>
+          )}
+        </div>
+
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Instantly populate the workspace with realistic engineering datasets: MTE 3101 & 3103 University courses, Mars Rover robotics project with dependency graph, ROS2 learning roadmap with subtopic trees, and urgent deadlines.
+        </p>
+
+        {isDemo ? (
+          <button
+            type="button"
+            disabled={seeding}
+            onClick={handleSeedData}
+            className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-foreground border border-border text-xs font-semibold rounded-xl flex items-center gap-2 transition-all shadow-2xs hover:border-primary/40"
+          >
+            {seeding ? <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" /> : <Sparkles className="w-3.5 h-3.5 text-primary" />}
+            Load Sample Engineering Dataset
+          </button>
+        ) : (
+          <div className="p-3.5 rounded-xl bg-secondary/40 border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <span>
+                Protected: Sample datasets are disabled on personal Google accounts to ensure your real tasks and roadmaps are never replaced.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => loginDemo("engineer")}
+              className="px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-[11px] font-semibold text-foreground border border-border/70 whitespace-nowrap self-start sm:self-auto"
+            >
+              Switch to Demo Mode
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Danger Zone: Reset Workspace */}
+      <div className="p-6 rounded-2xl bg-card border border-red-500/30 shadow-specular-card space-y-3.5">
+        <div className="flex items-center gap-2 text-red-400">
+          <Trash2 className="w-4 h-4 text-red-400" />
+          <h2 className="text-base font-bold text-foreground">Reset All Workspace Data</h2>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Instantly populate your account with realistic engineering datasets: MTE 3101 & 3103 University courses, Mars Rover robotics project with dependency graph, ROS2 learning roadmap with subtopic trees, historical focus sessions, and urgent deadlines.
+          Need a fresh start? Resetting your workspace permanently removes all tasks, courses, roadmaps, goals, and focus sessions associated with this account.
         </p>
         <button
           type="button"
-          disabled={seeding}
-          onClick={handleSeedData}
-          className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-foreground border border-border text-xs font-semibold rounded-xl flex items-center gap-2 transition-all shadow-2xs hover:border-primary/40"
+          onClick={() => setResetModalOpen(true)}
+          className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs font-semibold rounded-xl flex items-center gap-2 transition-all"
         >
-          {seeding ? <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" /> : <Sparkles className="w-3.5 h-3.5 text-primary" />}
-          Load Sample Engineering Dataset
+          <AlertTriangle className="w-3.5 h-3.5" />
+          Reset Workspace...
         </button>
       </div>
+
+      {/* Reset Confirmation Modal */}
+      {resetModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-md bg-card border border-red-500/40 rounded-2xl shadow-2xl p-6 space-y-4">
+            <div className="flex items-center gap-2.5 text-red-400">
+              <ShieldAlert className="w-5 h-5 flex-shrink-0" />
+              <h3 className="text-base font-bold text-foreground">Confirm Total Workspace Reset</h3>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              This action <span className="font-semibold text-red-400">cannot be undone</span>. All your active tasks, university courses, robotics projects, and learning roadmaps will be permanently deleted.
+            </p>
+            <div className="space-y-1.5 text-xs">
+              <label className="block font-semibold text-muted-foreground">
+                Type <span className="text-red-400 font-mono font-bold">RESET</span> to confirm:
+              </label>
+              <input
+                type="text"
+                value={resetConfirmation}
+                onChange={(e) => setResetConfirmation(e.target.value)}
+                placeholder="RESET"
+                className="w-full px-3.5 py-2 bg-secondary/50 border border-border/80 rounded-xl text-foreground font-mono text-sm focus:outline-none focus:ring-1 focus:ring-red-500/60"
+              />
+            </div>
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border/70">
+              <button
+                type="button"
+                onClick={() => {
+                  setResetModalOpen(false);
+                  setResetConfirmation("");
+                }}
+                className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-xl hover:bg-secondary transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={resetConfirmation.trim() !== "RESET" || resetting}
+                onClick={handleResetWorkspace}
+                className="px-4 py-2 bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-all shadow-glow-crimson-sm"
+              >
+                {resetting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                Permanently Erase All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

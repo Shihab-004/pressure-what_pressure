@@ -6,12 +6,14 @@ import { ITask, TaskCategory, TaskPriority, TaskStatus } from "@/types";
 import { useApi } from "@/lib/api/useApi";
 import { toast } from "sonner";
 import { SpiderLogo } from "@/components/icons/SpiderLogo";
+import { taskSync } from "@/lib/events/taskSync";
 
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSaved: () => void;
   taskToEdit?: ITask | null;
+  defaultDate?: string | null;
   existingTasks?: ITask[];
 }
 
@@ -20,6 +22,7 @@ export function TaskModal({
   onClose,
   onSaved,
   taskToEdit,
+  defaultDate,
   existingTasks = [],
 }: TaskModalProps) {
   const [title, setTitle] = useState("");
@@ -54,10 +57,10 @@ export function TaskModal({
       setStatus("inbox");
       setEstimatedMinutes(45);
       setDeadline("");
-      setScheduledDate("");
+      setScheduledDate(defaultDate || "");
       setDependencies([]);
     }
-  }, [taskToEdit, isOpen]);
+  }, [taskToEdit, isOpen, defaultDate]);
 
   if (!isOpen) return null;
 
@@ -99,6 +102,10 @@ export function TaskModal({
       toast.error(error);
     } else {
       toast.success(taskToEdit ? "Task updated" : "Task created");
+      taskSync.notify({
+        type: taskToEdit ? "task:updated" : "task:created",
+        taskId: taskToEdit?._id,
+      });
       onSaved();
       onClose();
     }

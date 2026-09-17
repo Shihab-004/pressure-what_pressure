@@ -20,6 +20,8 @@ import { toast } from "sonner";
 import { formatMinutes, formatDateLabel } from "@/lib/utils";
 import { addDays, subDays, format } from "date-fns";
 import { SpiderLogo } from "@/components/icons/SpiderLogo";
+import { taskSync } from "@/lib/events/taskSync";
+import { TaskCardSkeleton } from "@/components/ui/Skeleton";
 
 interface DailyPlannerViewProps {
   onStartFocus: (task: ITask) => void;
@@ -41,12 +43,16 @@ export function DailyPlannerView({
 
   useEffect(() => {
     loadDailyPlan();
+    const unsubscribe = taskSync.subscribe(() => {
+      loadDailyPlan(true);
+    });
+    return unsubscribe;
   }, [selectedDate]);
 
-  async function loadDailyPlan() {
-    setLoading(true);
+  async function loadDailyPlan(silent = false) {
+    if (!silent) setLoading(true);
     const { data, error } = await apiFetch(`/api/planner/daily?date=${selectedDate}`);
-    setLoading(false);
+    if (!silent) setLoading(false);
 
     if (error) {
       toast.error(error);
@@ -67,18 +73,61 @@ export function DailyPlannerView({
       toast.error(error);
     } else {
       toast.success(data.message || "Workload balanced successfully!");
-      loadDailyPlan();
+      taskSync.notify({ type: "task:updated" });
+      loadDailyPlan(true);
     }
   }
 
   async function handleToggleComplete(task: ITask) {
     const isComp = task.status === "completed";
     const nextStatus = isComp ? "planned" : "completed";
-    await apiFetch(`/api/tasks/${task._id}`, {
+
+    // Optimistic local update
+    setPlanData((prev: any) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        tasks: prev.tasks.map((t: any) =>
+          t._id === task._id ? { ...t, status: nextStatus } : t
+        ),
+      };
+    });
+
+    const { error } = await apiFetch(`/api/tasks/${task._id}`, {
       method: "PATCH",
       body: JSON.stringify({ status: nextStatus }),
     });
-    loadDailyPlan();
+
+    if (error) {
+      toast.error(error);
+      loadDailyPlan(true);
+    } else {
+      taskSync.notify({ type: "task:completed", taskId: task._id });
+    }
+  }
+
+  async function handleQuickMoveDate(task: ITask, targetDate: string) {
+    // Optimistic remove from this day
+    setPlanData((prev: any) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        tasks: prev.tasks.filter((t: any) => t._id !== task._id),
+      };
+    });
+
+    const { error } = await apiFetch(`/api/tasks/${task._id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ scheduledDate: targetDate, status: "planned" }),
+    });
+
+    if (error) {
+      toast.error(error);
+      loadDailyPlan(true);
+    } else {
+      toast.success(`Moved to ${targetDate}`);
+      taskSync.notify({ type: "task:rescheduled", taskId: task._id });
+    }
   }
 
   const workload = planData?.workload;
@@ -203,8 +252,10 @@ export function DailyPlannerView({
         </div>
 
         {loading ? (
-          <div className="py-14 text-center text-xs text-muted-foreground">
-            Synchronizing schedule...
+          <div className="space-y-3">
+            {[0, 1, 2].map((idx) => (
+              <TaskCardSkeleton key={idx} />
+            ))}
           </div>
         ) : tasks.length === 0 ? (
           <div className="p-10 rounded-2xl bg-card border border-border text-center space-y-2 shadow-specular-card">

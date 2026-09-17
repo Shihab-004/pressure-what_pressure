@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import { X, Calendar, Clock, HelpCircle, Check } from "lucide-react";
@@ -7,6 +7,7 @@ import { useApi } from "@/lib/api/useApi";
 import { toast } from "sonner";
 import { addDays, format } from "date-fns";
 import { SpiderLogo } from "@/components/icons/SpiderLogo";
+import { taskSync } from "@/lib/events/taskSync";
 
 interface CarryOverModalProps {
   task: ITask | null;
@@ -43,6 +44,7 @@ export function CarryOverModal({ task, isOpen, onClose, onRescheduled }: CarryOv
       toast.error(error);
     } else {
       toast.info(`Task rescheduled to ${newDate} (${reason?.replace(/_/g, " ")})`);
+      taskSync.notify({ type: "task:rescheduled", taskId: task._id });
       onRescheduled();
       onClose();
     }

@@ -13,6 +13,22 @@ export async function POST(req: NextRequest) {
   const authUser = await getAuthenticatedUser(req);
   if (!authUser) return unauthorizedResponse();
 
+  // Protect personal user accounts: sample datasets can ONLY be loaded on demo/guest accounts
+  const isDemo =
+    authUser.firebaseUid?.startsWith("demo_") ||
+    authUser.email === "demo@personalos.local" ||
+    authUser.email?.includes("demo");
+
+  if (!isDemo) {
+    return NextResponse.json(
+      {
+        error:
+          "Sample Workspace Datasets are restricted to Demo accounts only. Personal Google accounts cannot be overwritten by seed datasets.",
+      },
+      { status: 403 }
+    );
+  }
+
   try {
     await connectToDatabase();
     const userId = authUser.id;

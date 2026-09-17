@@ -15,8 +15,8 @@ export async function GET(req: NextRequest) {
     const dateParam = searchParams.get("date");
 
     const baseDate = dateParam ? new Date(dateParam) : new Date();
-    // Default week starting Sunday
-    const weekStartObj = startOfWeek(baseDate, { weekStartsOn: 0 });
+    // Week sequence starts on Friday (5): Fri, Sat, Sun, Mon, Tue, Wed, Thu
+    const weekStartObj = startOfWeek(baseDate, { weekStartsOn: 5 });
     const weekStartStr = format(weekStartObj, "yyyy-MM-dd");
     const weekEndStr = format(addDays(weekStartObj, 6), "yyyy-MM-dd");
 
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
   try {
     await connectToDatabase();
     const body = await req.json();
-    const weekStartStr = body.weekStart || format(startOfWeek(new Date(), { weekStartsOn: 0 }), "yyyy-MM-dd");
+    const weekStartStr = body.weekStart || format(startOfWeek(new Date(), { weekStartsOn: 5 }), "yyyy-MM-dd");
     const weekStartObj = new Date(weekStartStr);
 
     const workDays = authUser.preferences?.workDays || [0, 1, 2, 3, 4];

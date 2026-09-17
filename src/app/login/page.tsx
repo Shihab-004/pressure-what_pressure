@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { GoogleIcon } from "@/components/icons/GoogleIcon";
-import { ShieldCheck, Mail, Key, User, ArrowRight, Loader2, Zap } from "lucide-react";
+import { Mail, Key, User, ArrowRight, Loader2 } from "lucide-react";
+import { SpiderLogo } from "@/components/icons/SpiderLogo";
 import { toast } from "sonner";
 
 export default function LoginPage() {
@@ -65,34 +66,34 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 sm:p-6 selection:bg-primary/20">
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 sm:p-6 web-pattern-bg">
       {/* Brand Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-sky-400 flex items-center justify-center text-primary-foreground shadow-md shadow-primary/30">
-          <Zap className="w-5 h-5 fill-current" />
+      <div className="flex items-center gap-3.5 mb-8">
+        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary via-red-600 to-rose-700 flex items-center justify-center text-white shadow-glow-crimson border border-red-400/40">
+          <SpiderLogo className="w-6 h-6 text-white fill-white" glow />
         </div>
         <div>
-          <div className="text-xl font-bold tracking-tight text-foreground flex items-center gap-1.5">
-            Personal<span className="text-primary">OS</span>
+          <div className="text-2xl font-display font-black tracking-tight text-foreground flex items-center gap-1">
+            Personal<span className="text-primary font-black">OS</span>
           </div>
-          <div className="text-xs uppercase font-mono tracking-wider text-muted-foreground">
-            Personal Command Center
+          <div className="text-[10px] uppercase font-display font-bold tracking-widest text-muted-foreground">
+            Command Center Access
           </div>
         </div>
       </div>
 
       {/* Main Authentication Card */}
-      <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-xl p-6 sm:p-8 space-y-6 animate-fadeIn">
+      <div className="w-full max-w-md spider-card p-6 sm:p-8 space-y-6 shadow-2xl animate-scaleIn">
         <div className="space-y-1.5 text-center">
-          <h1 className="text-xl font-bold text-foreground">
-            {mode === "login" && "Sign In to Your Workspace"}
-            {mode === "register" && "Create Private Account"}
-            {mode === "reset" && "Reset Password"}
+          <h1 className="text-xl font-display font-bold text-foreground">
+            {mode === "login" && "Sign In to Workspace"}
+            {mode === "register" && "Initialize Private Account"}
+            {mode === "reset" && "Password Recovery"}
           </h1>
           <p className="text-xs text-muted-foreground">
-            {mode === "login" && "Access your tasks, academic courses, and roadmap."}
-            {mode === "register" && "Start your personal operating system in seconds."}
-            {mode === "reset" && "Enter your email to receive recovery instructions."}
+            {mode === "login" && "Access mission-critical execution plan and roadmap."}
+            {mode === "register" && "Start your personalized operating system."}
+            {mode === "reset" && "Enter email to receive cryptographic recovery link."}
           </p>
         </div>
 
@@ -103,20 +104,20 @@ export default function LoginPage() {
               type="button"
               disabled={googleSubmitting || submitting}
               onClick={handleGoogleSignIn}
-              className="w-full py-3 px-4 bg-background hover:bg-secondary/70 text-foreground border border-border hover:border-border/90 font-medium rounded-xl text-xs flex items-center justify-center gap-3 shadow-xs transition-all active:scale-[0.99] disabled:opacity-60"
+              className="spider-btn-secondary w-full py-3"
             >
               {googleSubmitting ? (
                 <Loader2 className="w-4 h-4 animate-spin text-primary" />
               ) : (
                 <GoogleIcon className="w-4 h-4" />
               )}
-              <span className="font-semibold">Continue with Google</span>
+              <span>Continue with Google</span>
             </button>
 
             <div className="relative flex items-center justify-center">
-              <div className="w-full border-t border-border/70" />
-              <span className="bg-card px-2 text-[11px] text-muted-foreground uppercase tracking-wider font-mono absolute">
-                or continue with email
+              <div className="w-full border-t border-border/80" />
+              <span className="bg-card px-2 text-[10px] text-muted-foreground uppercase tracking-widest font-display font-bold absolute">
+                or email credentials
               </span>
             </div>
           </div>
@@ -126,32 +127,32 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {mode === "register" && (
             <div>
-              <label className="block font-medium text-muted-foreground mb-1">Your Name</label>
+              <label className="block font-display font-bold text-muted-foreground mb-1 uppercase text-[10px] tracking-wider">Full Name</label>
               <div className="relative">
-                <User className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
+                <User className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Alex Rahman"
-                  className="w-full pl-9 pr-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60 text-xs"
+                  placeholder="Operator name"
+                  className="w-full pl-10 pr-3.5 py-2.5 bg-secondary/50 border border-border/80 rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60 text-xs font-sans"
                 />
               </div>
             </div>
           )}
 
           <div>
-            <label className="block font-medium text-muted-foreground mb-1">Email Address</label>
+            <label className="block font-display font-bold text-muted-foreground mb-1 uppercase text-[10px] tracking-wider">Email Address</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
+              <Mail className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@university.edu"
-                className="w-full pl-9 pr-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60 text-xs"
+                placeholder="operator@workspace.io"
+                className="w-full pl-10 pr-3.5 py-2.5 bg-secondary/50 border border-border/80 rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60 text-xs font-sans"
               />
             </div>
           </div>
@@ -159,26 +160,26 @@ export default function LoginPage() {
           {mode !== "reset" && (
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="font-medium text-muted-foreground">Password</label>
+                <label className="font-display font-bold text-muted-foreground uppercase text-[10px] tracking-wider">Password</label>
                 {mode === "login" && (
                   <button
                     type="button"
                     onClick={() => setMode("reset")}
-                    className="text-[11px] text-primary hover:underline"
+                    className="text-[11px] text-primary hover:underline font-semibold font-display"
                   >
-                    Forgot password?
+                    Forgot?
                   </button>
                 )}
               </div>
               <div className="relative">
-                <Key className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
+                <Key className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3" />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-9 pr-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60 text-xs"
+                  className="w-full pl-10 pr-3.5 py-2.5 bg-secondary/50 border border-border/80 rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60 text-xs font-sans"
                 />
               </div>
             </div>
@@ -187,49 +188,51 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting || googleSubmitting}
-            className="w-full py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg flex items-center justify-center gap-1.5 shadow-sm transition-all text-xs"
+            className="spider-btn-primary w-full py-3.5"
           >
             {submitting ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <>
-                {mode === "login" && "Sign In with Email"}
-                {mode === "register" && "Create Account"}
-                {mode === "reset" && "Send Reset Link"}
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>
+                  {mode === "login" && "Authorize & Enter"}
+                  {mode === "register" && "Create Account"}
+                  {mode === "reset" && "Send Reset Link"}
+                </span>
+                <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
               </>
             )}
           </button>
         </form>
 
         {/* Mode Switcher */}
-        <div className="text-center text-xs text-muted-foreground pt-2 border-t border-border">
+        <div className="text-center text-xs text-muted-foreground pt-2 border-t border-border/80">
           {mode === "login" ? (
             <p>
-              Don't have an account?{" "}
+              New user?{" "}
               <button
                 onClick={() => setMode("register")}
-                className="font-medium text-primary hover:underline"
+                className="font-bold text-primary hover:underline font-display"
               >
-                Sign up
+                Create Account
               </button>
             </p>
           ) : (
             <p>
-              Already have an account?{" "}
+              Existing operator?{" "}
               <button
                 onClick={() => setMode("login")}
-                className="font-medium text-primary hover:underline"
+                className="font-bold text-primary hover:underline font-display"
               >
-                Sign in
+                Sign In
               </button>
             </p>
           )}
         </div>
 
         {/* Demo Fast Access for zero-setup evaluation */}
-        <div className="pt-2 border-t border-border space-y-2 text-center">
-          <span className="text-[11px] text-muted-foreground">Quick test account:</span>
+        <div className="pt-2 border-t border-border/80 space-y-2 text-center">
+          <span className="text-[10px] text-muted-foreground font-display font-bold uppercase tracking-wider">Quick Session:</span>
           <div className="flex items-center justify-center gap-2">
             <button
               type="button"
@@ -237,7 +240,7 @@ export default function LoginPage() {
                 await loginDemo("engineer");
                 router.push("/");
               }}
-              className="px-2.5 py-1 rounded bg-secondary hover:bg-secondary/80 text-[11px] text-foreground border border-border"
+              className="spider-btn-secondary spider-btn-sm text-[11px]"
             >
               Demo Engineer
             </button>
@@ -247,7 +250,7 @@ export default function LoginPage() {
                 await loginDemo("student");
                 router.push("/");
               }}
-              className="px-2.5 py-1 rounded bg-secondary hover:bg-secondary/80 text-[11px] text-foreground border border-border"
+              className="spider-btn-secondary spider-btn-sm text-[11px]"
             >
               Demo Student
             </button>

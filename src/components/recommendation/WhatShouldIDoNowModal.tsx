@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Sparkles, Clock, CheckCircle2, Play, RefreshCw, X, AlertCircle, ArrowRight } from "lucide-react";
+import { Sparkles, Clock, CheckCircle2, Play, RefreshCw, X, Zap } from "lucide-react";
 import { ITask, ITaskRecommendation } from "@/types";
 import { useApi } from "@/lib/api/useApi";
 import { toast } from "sonner";
 import { formatMinutes, formatDateLabel } from "@/lib/utils";
+import { SpiderLogo } from "@/components/icons/SpiderLogo";
 
 interface WhatShouldIDoNowModalProps {
   isOpen: boolean;
@@ -60,9 +61,9 @@ export function WhatShouldIDoNowModal({
         candidatePool.push({
           task: alt,
           reasons: [
-            `High priority (${alt.priority})`,
-            `Estimated ${alt.estimatedMinutes || 45} minutes`,
-            alt.deadline ? `Due ${formatDateLabel(alt.deadline)}` : "Next best actionable task",
+            `High priority status (${alt.priority})`,
+            `Estimated duration: ${alt.estimatedMinutes || 45} minutes`,
+            alt.deadline ? `Due: ${formatDateLabel(alt.deadline)}` : "Unblocked and immediately actionable",
           ],
         });
       });
@@ -80,15 +81,21 @@ export function WhatShouldIDoNowModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
-      <div className="w-full max-w-lg bg-card border border-border/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/60 bg-gradient-to-r from-card to-secondary/30">
-          <div className="flex items-center gap-2">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-              Personal Decision Engine
-            </span>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fadeIn">
+      <div className="w-full max-w-lg spider-card shadow-2xl overflow-hidden flex flex-col animate-scaleIn">
+        {/* Header with Spider-Sense radar indicator */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/80 bg-secondary/30">
+          <div className="flex items-center gap-2.5">
+            <div className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
+            </div>
+            <div className="flex items-center gap-2">
+              <SpiderLogo className="w-4 h-4 text-primary" />
+              <span className="text-xs font-display font-bold uppercase tracking-widest text-foreground">
+                Spider-Sense Decision Engine
+              </span>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -101,48 +108,49 @@ export function WhatShouldIDoNowModal({
         {/* Body */}
         <div className="p-6">
           {loading ? (
-            <div className="py-12 flex flex-col items-center justify-center space-y-3">
+            <div className="py-14 flex flex-col items-center justify-center space-y-3">
               <RefreshCw className="w-8 h-8 text-primary animate-spin" />
-              <p className="text-xs text-muted-foreground font-medium">
-                Evaluating urgency, dependencies, and available workload...
+              <p className="text-xs text-muted-foreground font-display font-medium">
+                Evaluating dependency graph, deadlines, and current energy...
               </p>
             </div>
           ) : !currentItem ? (
             <div className="py-10 text-center space-y-3">
-              <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
-              <h3 className="text-base font-medium text-foreground">You are completely clear!</h3>
+              <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
+              <h3 className="text-base font-display font-bold text-foreground">Zero Critical Bottlenecks</h3>
               <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                No actionable pending tasks require immediate attention right now. Take a breather or capture new ideas in the Inbox.
+                No unblocked pending tasks require immediate intervention right now.
               </p>
             </div>
           ) : (
             <div className="space-y-5">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider uppercase bg-primary/10 text-primary border border-primary/20">
-                    🎯 DO THIS NOW {candidatePool.length > 1 ? `(#${currentIndex + 1} of ${candidatePool.length})` : ""}
+                  <span className="px-2.5 py-0.5 rounded text-[10px] font-display font-bold tracking-wider uppercase bg-primary/20 text-primary border border-primary/40 flex items-center gap-1 shadow-glow-crimson-sm">
+                    <Zap className="w-3 h-3 fill-current" />
+                    OPTIMAL TARGET {candidatePool.length > 1 ? `(#${currentIndex + 1}/${candidatePool.length})` : ""}
                   </span>
-                  <span className="text-xs text-muted-foreground px-2 py-0.5 rounded bg-secondary/80 border border-border/60">
+                  <span className="text-[10px] text-muted-foreground px-2 py-0.5 rounded bg-secondary/80 border border-border/70 font-display font-semibold uppercase">
                     {currentItem.task.category}
                   </span>
                 </div>
 
-                <h2 className="text-xl font-semibold text-foreground leading-snug tracking-tight">
+                <h2 className="text-xl font-display font-bold text-foreground leading-snug tracking-tight">
                   {currentItem.task.title}
                 </h2>
 
                 {currentItem.task.description && (
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                  <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
                     {currentItem.task.description}
                   </p>
                 )}
               </div>
 
-              {/* Explainable Reasoning */}
-              <div className="p-4 rounded-xl bg-secondary/30 border border-border/70 space-y-2.5">
-                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              {/* Explainable Reasoning Block */}
+              <div className="p-4 rounded-xl bg-secondary/30 border border-border/80 space-y-2">
+                <div className="text-[11px] font-display font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-primary" />
-                  Why this task right now?
+                  Algorithm Rationale
                 </div>
                 <ul className="space-y-1.5 text-xs text-foreground/90">
                   {currentItem.reasons.map((reason, i) => (
@@ -155,38 +163,40 @@ export function WhatShouldIDoNowModal({
               </div>
 
               {/* Task Meta details */}
-              <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+              <div className="flex items-center justify-between text-xs text-muted-foreground px-1 font-display tabular-nums">
                 <div className="flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-sky-400" />
-                  <span>Estimated: {formatMinutes(currentItem.task.estimatedMinutes || 45)}</span>
+                  <span>Est: {formatMinutes(currentItem.task.estimatedMinutes || 45)}</span>
                 </div>
                 {currentItem.task.deadline && (
-                  <div>Due: {formatDateLabel(currentItem.task.deadline)}</div>
+                  <div className="text-amber-400 font-semibold">
+                    Due: {formatDateLabel(currentItem.task.deadline)}
+                  </div>
                 )}
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => {
                     onClose();
                     onStartFocus(currentItem.task);
                   }}
-                  className="flex-1 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg flex items-center justify-center gap-2 shadow-sm transition-all"
+                  className="spider-btn-primary flex-1 py-3"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
-                  START FOCUS ({currentItem.task.estimatedMinutes || 45}m)
+                  <span>START FOCUS ({currentItem.task.estimatedMinutes || 45}m)</span>
                 </button>
 
                 {candidatePool.length > 1 && (
                   <button
                     type="button"
                     onClick={handleChooseAnother}
-                    className="px-3.5 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground border border-border/80 text-xs font-medium rounded-lg flex items-center gap-1.5 transition-colors"
+                    className="spider-btn-secondary px-4 py-3 justify-center"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
-                    Next Best
+                    <span>Next Option</span>
                   </button>
                 )}
               </div>

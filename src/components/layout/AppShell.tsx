@@ -80,7 +80,6 @@ export function AppShell() {
   // Global Keyboard Shortcuts (N, B, T, P, F, Ctrl+K)
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      // Don't trigger if user is typing in an input or textarea
       const target = e.target as HTMLElement;
       if (
         target.tagName === "INPUT" ||
@@ -146,7 +145,6 @@ export function AppShell() {
 
   // If Overwhelm Mode is triggered, render the Sanctuary
   if (isOverwhelmed) {
-    // Sort critical tasks first
     const criticalTasks = [...allPendingTasks].sort((a, b) => {
       const pOrder = { critical: 4, high: 3, medium: 2, low: 1 };
       return (pOrder[b.priority] || 2) - (pOrder[a.priority] || 2);
@@ -164,7 +162,7 @@ export function AppShell() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen bg-background text-foreground web-pattern-bg">
       {/* Desktop Sidebar */}
       <Sidebar
         currentTab={currentTab}
@@ -173,12 +171,13 @@ export function AppShell() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
+      <div className="flex-1 flex flex-col min-w-0 pb-28 md:pb-8">
         <Header
           onOpenCommandPalette={() => setIsPaletteOpen(true)}
           onOpenBrainDump={() => setIsBrainDumpOpen(true)}
           onTriggerWhatNow={() => setIsWhatNowOpen(true)}
           onToggleOverwhelm={() => setIsOverwhelmed(true)}
+          onOpenAuth={() => setIsAuthOpen(true)}
         />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
@@ -207,15 +206,15 @@ export function AppShell() {
           )}
 
           {currentTab === "planner" && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {/* Daily vs Weekly Toggle */}
-              <div className="flex items-center justify-center gap-1 border-b border-border pb-3 max-w-xs mx-auto">
+              <div className="flex items-center justify-center gap-1.5 p-1 bg-secondary/40 border border-border/80 rounded-xl max-w-xs mx-auto shadow-inner">
                 <button
                   type="button"
                   onClick={() => setPlannerSubTab("daily")}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all ${
                     plannerSubTab === "daily"
-                      ? "bg-primary text-primary-foreground shadow-sm"
+                      ? "bg-primary text-white shadow-glow-crimson-sm"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -224,9 +223,9 @@ export function AppShell() {
                 <button
                   type="button"
                   onClick={() => setPlannerSubTab("weekly")}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all ${
                     plannerSubTab === "weekly"
-                      ? "bg-primary text-primary-foreground shadow-sm"
+                      ? "bg-primary text-white shadow-glow-crimson-sm"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -276,10 +275,14 @@ export function AppShell() {
           )}
           {currentTab === "analytics" && <AnalyticsView />}
           {currentTab === "review" && (
-            <div className="max-w-md mx-auto pt-8">
+            <div className="max-w-md mx-auto pt-10 text-center space-y-4">
+              <h2 className="text-xl font-bold text-foreground">Evening Closeout Review</h2>
+              <p className="text-xs text-muted-foreground">
+                Reflect on today's focus metrics, log mood, and carry over unfinished tasks.
+              </p>
               <button
                 onClick={() => setIsDailyReviewOpen(true)}
-                className="w-full py-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm shadow-md transition-all"
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary via-red-600 to-rose-600 hover:from-primary/90 hover:to-rose-500 text-white font-semibold text-xs shadow-glow-crimson transition-all"
               >
                 Launch Daily Review
               </button>
@@ -297,6 +300,7 @@ export function AppShell() {
           setTaskToEdit(null);
           setIsNewTaskOpen(true);
         }}
+        onOpenAuth={() => setIsAuthOpen(true)}
       />
 
       {/* Global Modals */}

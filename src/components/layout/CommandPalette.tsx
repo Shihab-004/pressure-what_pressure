@@ -14,7 +14,9 @@ import {
   FileText,
   Sliders,
   X,
+  Sparkles,
 } from "lucide-react";
+import { SpiderLogo } from "@/components/icons/SpiderLogo";
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -43,51 +45,57 @@ export function CommandPalette({ isOpen, onClose, onAction }: CommandPaletteProp
   if (!isOpen) return null;
 
   const actions = [
-    { id: "what_now", label: "What Should I Do Now?", icon: Zap, group: "Engine" },
-    { id: "new_task", label: "Create New Task (N)", icon: Plus, group: "Actions" },
-    { id: "brain_dump", label: "Brain Dump → Structured Tasks (B)", icon: Brain, group: "Actions" },
-    { id: "daily_review", label: "Daily Closeout Review", icon: FileText, group: "Actions" },
-    { id: "nav_dashboard", label: "Go to Command Dashboard (T)", icon: Zap, group: "Navigation" },
-    { id: "nav_tasks", label: "Go to Tasks Matrix", icon: Plus, group: "Navigation" },
-    { id: "nav_planner", label: "Go to Daily & Weekly Planner (P)", icon: Calendar, group: "Navigation" },
-    { id: "nav_university", label: "Go to University Workspace", icon: GraduationCap, group: "Navigation" },
-    { id: "nav_learning", label: "Go to Learning Roadmaps", icon: Compass, group: "Navigation" },
-    { id: "nav_projects", label: "Go to Projects", icon: Sliders, group: "Navigation" },
-    { id: "nav_goals", label: "Go to Goal Hierarchy", icon: Target, group: "Navigation" },
-    { id: "nav_analytics", label: "Go to Visual Analytics", icon: BarChart3, group: "Navigation" },
-    { id: "nav_settings", label: "Open Settings & Profile", icon: Sliders, group: "Navigation" },
+    { id: "what_now", label: "What Should I Do Now?", icon: Zap, group: "Engine", hint: "F" },
+    { id: "new_task", label: "Create New Task", icon: Plus, group: "Actions", hint: "N" },
+    { id: "brain_dump", label: "Brain Dump → Structured Tasks", icon: Brain, group: "Actions", hint: "B" },
+    { id: "daily_review", label: "Daily Closeout Review", icon: FileText, group: "Actions", hint: "End of day" },
+    { id: "nav_dashboard", label: "Command Dashboard", icon: Zap, group: "Navigation", hint: "T" },
+    { id: "nav_tasks", label: "Tasks & Priority Registry", icon: Plus, group: "Navigation", hint: "" },
+    { id: "nav_planner", label: "Daily & Weekly Planner", icon: Calendar, group: "Navigation", hint: "P" },
+    { id: "nav_university", label: "University Academic Workspace", icon: GraduationCap, group: "Navigation", hint: "Courses" },
+    { id: "nav_learning", label: "Learning OS & Technical Mastery", icon: Compass, group: "Navigation", hint: "Roadmaps" },
+    { id: "nav_projects", label: "Projects & Technical Initiatives", icon: Sliders, group: "Navigation", hint: "" },
+    { id: "nav_goals", label: "Goal Hierarchy & Vision", icon: Target, group: "Navigation", hint: "" },
+    { id: "nav_analytics", label: "Performance & Estimation Analytics", icon: BarChart3, group: "Navigation", hint: "" },
+    { id: "nav_settings", label: "Workspace Settings & Profile", icon: Sliders, group: "Navigation", hint: "" },
   ];
 
   const filtered = actions.filter((a) =>
-    a.label.toLowerCase().includes(query.toLowerCase())
+    a.label.toLowerCase().includes(query.toLowerCase()) ||
+    a.group.toLowerCase().includes(query.toLowerCase())
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-      <div className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-        {/* Search header */}
-        <div className="flex items-center px-4 py-3 border-b border-border gap-2.5">
-          <Search className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+      <div className="w-full max-w-xl spider-card shadow-2xl overflow-hidden flex flex-col animate-scaleIn">
+        {/* Search Header */}
+        <div className="flex items-center px-4 py-3.5 border-b border-border/80 gap-3 bg-secondary/30">
+          <Search className="w-4 h-4 text-primary flex-shrink-0" />
           <input
             autoFocus
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type a command or jump to screen... (Esc to close)"
-            className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+            placeholder="Search command or jump to screen... (Esc)"
+            className="w-full bg-transparent text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none font-sans"
           />
-          <button
-            onClick={onClose}
-            className="p-1 text-muted-foreground hover:text-foreground rounded"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
+          {query && (
+            <button
+              onClick={() => setQuery("")}
+              className="p-1 text-muted-foreground hover:text-foreground rounded"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+          <kbd className="text-[10px] font-display font-bold bg-secondary px-2 py-0.5 rounded border border-border text-muted-foreground hidden sm:inline-block">
+            ESC
+          </kbd>
         </div>
 
-        {/* Commands List */}
-        <div className="max-h-80 overflow-y-auto p-2 space-y-1">
+        {/* Action List */}
+        <div className="max-h-84 overflow-y-auto p-2 space-y-1">
           {filtered.length === 0 ? (
-            <div className="p-4 text-center text-xs text-muted-foreground">
+            <div className="py-10 text-center text-xs text-muted-foreground font-display">
               No matching commands.
             </div>
           ) : (
@@ -101,21 +109,39 @@ export function CommandPalette({ isOpen, onClose, onAction }: CommandPaletteProp
                     onAction(item.id);
                     onClose();
                   }}
-                  className="w-full p-2.5 rounded-xl hover:bg-secondary flex items-center justify-between text-xs text-left transition-colors group"
+                  className="w-full p-2.5 rounded-lg hover:bg-secondary/80 flex items-center justify-between text-xs text-left transition-all duration-150 group"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-1.5 rounded-lg bg-secondary text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="p-2 rounded-lg bg-secondary text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-2xs group-hover:shadow-glow-crimson-sm">
                       <Icon className="w-4 h-4" />
                     </div>
-                    <span className="font-medium text-foreground">{item.label}</span>
+                    <span className="font-medium text-foreground truncate group-hover:text-white transition-colors">
+                      {item.label}
+                    </span>
                   </div>
-                  <span className="text-[10px] text-muted-foreground uppercase font-mono tracking-wider">
-                    {item.group}
-                  </span>
+                  <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                    {item.hint && (
+                      <kbd className="text-[10px] font-display font-bold bg-card px-1.5 py-0.5 rounded border border-border text-muted-foreground">
+                        {item.hint}
+                      </kbd>
+                    )}
+                    <span className="text-[10px] text-muted-foreground/80 uppercase font-display font-bold tracking-wider">
+                      {item.group}
+                    </span>
+                  </div>
                 </button>
               );
             })
           )}
+        </div>
+
+        {/* Footer info bar */}
+        <div className="px-4 py-2 border-t border-border/60 bg-secondary/20 flex items-center justify-between text-[11px] text-muted-foreground font-display">
+          <div className="flex items-center gap-1.5">
+            <SpiderLogo className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] font-bold">Spider Command Hub</span>
+          </div>
+          <span className="text-[10px]">Jump to screen or execute action</span>
         </div>
       </div>
     </div>

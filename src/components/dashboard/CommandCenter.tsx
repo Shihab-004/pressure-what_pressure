@@ -16,12 +16,14 @@ import {
   CheckCircle2,
   RefreshCw,
   Zap,
+  ShieldAlert,
 } from "lucide-react";
 import { ITask, IGoal } from "@/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useApi } from "@/lib/api/useApi";
 import { formatMinutes, formatDateLabel } from "@/lib/utils";
 import { QuickAddBar } from "@/components/tasks/QuickAddBar";
+import { SpiderLogo } from "@/components/icons/SpiderLogo";
 import { format } from "date-fns";
 
 interface CommandCenterProps {
@@ -107,31 +109,37 @@ export function CommandCenter({
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Top Banner & Greetings */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
-            TODAY · {todayFormatted}
+          <div className="text-[11px] font-display font-bold uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary inline-block shadow-glow-crimson animate-pulse" />
+            <span className="hidden sm:inline">EXECUTIVE BRIEF · </span>
+            <span>{todayFormatted}</span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-            Good day, {user?.name?.split(" ")[0] || "Maker"}
+          <h1 className="text-xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground flex items-center gap-2">
+            Welcome back, <span className="text-foreground">{user?.name?.split(" ")[0] || "Operator"}</span>
           </h1>
         </div>
 
-        {/* Big Action: WHAT SHOULD I DO NOW */}
-        <div className="flex items-center gap-3">
+        {/* Signature Action: WHAT SHOULD I DO NOW */}
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <button
             type="button"
             onClick={onTriggerWhatShouldIDo}
-            className="px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold rounded-xl flex items-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-95"
+            className="spider-btn-primary group w-full sm:w-auto justify-center"
           >
-            <Zap className="w-4 h-4 fill-current text-amber-300" />
-            What Should I Do Now?
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
+            </span>
+            <Zap className="w-3.5 h-3.5 fill-current text-amber-300 group-hover:rotate-12 transition-transform" />
+            <span>What Should I Do Now?</span>
           </button>
         </div>
       </div>
 
       {/* Quick Add Bar */}
-      <div className="bg-card/40 border border-border/80 rounded-xl p-2.5 backdrop-blur-sm shadow-sm">
+      <div className="spider-card p-2">
         <QuickAddBar onTaskCreated={loadDashboardData} />
       </div>
 
@@ -140,51 +148,52 @@ export function CommandCenter({
         {/* Left 2 Cols: Ordered Action Plan (DO FIRST, NEXT, THEN, OPTIONAL) */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              Today's Execution Sequence
+            <h2 className="text-[11px] font-display font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <SpiderLogo className="w-3.5 h-3.5 text-primary" />
+              Execution Sequence
             </h2>
             <button
               onClick={loadDashboardData}
               className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
             >
               <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin text-primary" : ""}`} />
-              Refresh
+              Sync
             </button>
           </div>
 
-          {/* DO FIRST (Signature Card) */}
+          {/* DO FIRST (Hero Signature Card) */}
           {todayData?.doFirst ? (
-            <div className="p-5 rounded-2xl bg-gradient-to-br from-card to-secondary/40 border border-primary/40 shadow-sm relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
+            <div className="spider-hero-card p-5 sm:p-6 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-primary/15 rounded-full blur-3xl pointer-events-none" />
 
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400 uppercase tracking-wider">
-                  <Flame className="w-4 h-4 fill-current" />
-                  DO FIRST
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-1.5 text-xs font-display font-bold text-amber-400 uppercase tracking-wider">
+                  <Flame className="w-4 h-4 fill-current text-amber-400" />
+                  <span>DO FIRST</span>
                 </div>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-foreground/80 border border-border">
+                <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-secondary/80 text-foreground font-medium border border-border">
                   {todayData.doFirst.category}
                 </span>
               </div>
 
-              <h3 className="text-lg font-semibold text-foreground leading-snug mb-1.5">
+              <h3 className="text-lg sm:text-xl font-display font-bold text-foreground leading-snug mb-2 group-hover:text-white transition-colors">
                 {todayData.doFirst.title}
               </h3>
 
               {todayData.doFirst.description && (
-                <p className="text-xs text-muted-foreground line-clamp-2 mb-4">
+                <p className="text-xs text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
                   {todayData.doFirst.description}
                 </p>
               )}
 
-              <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs text-muted-foreground flex-wrap gap-2">
+              <div className="flex items-center justify-between pt-3 border-t border-border/60 text-xs text-muted-foreground flex-wrap gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1.5 font-display tabular-nums">
                     <Clock className="w-3.5 h-3.5 text-sky-400" />
                     Est: {formatMinutes(todayData.doFirst.estimatedMinutes || 45)}
                   </span>
                   {todayData.doFirst.deadline && (
-                    <span className="flex items-center gap-1 text-amber-400">
+                    <span className="flex items-center gap-1.5 text-amber-400 font-display font-medium tabular-nums">
                       <Calendar className="w-3.5 h-3.5" />
                       Due: {formatDateLabel(todayData.doFirst.deadline)}
                     </span>
@@ -194,47 +203,48 @@ export function CommandCenter({
                 <button
                   type="button"
                   onClick={() => onStartFocus(todayData.doFirst)}
-                  className="px-4 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg flex items-center gap-1.5 shadow-sm transition-all"
+                  className="spider-btn-primary spider-btn-sm w-full sm:w-auto"
                 >
-                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <Play className="w-3 h-3 fill-current" />
                   START FOCUS
                 </button>
               </div>
             </div>
           ) : (
-            <div className="p-6 rounded-2xl bg-card border border-border text-center space-y-2">
+            <div className="spider-card p-8 text-center space-y-2.5">
               <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-              <p className="text-sm font-medium text-foreground">No tasks scheduled for today.</p>
-              <p className="text-xs text-muted-foreground">
-                You're all clear! Use Quick Add or the Planner to schedule work.
+              <p className="text-sm font-display font-bold text-foreground">Zero Critical Bottlenecks</p>
+              <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                No immediate tasks scheduled for today. Capture new targets using the Quick Bar above.
               </p>
             </div>
           )}
 
           {/* NEXT */}
           {todayData?.nextTask && (
-            <div className="p-4 rounded-xl bg-card/60 border border-border/70 hover:border-border transition-all flex items-center justify-between gap-4">
+            <div className="spider-card p-4 flex items-center justify-between gap-4">
               <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1">
+                  <span className="text-[10px] font-display font-bold text-sky-400 uppercase tracking-wider flex items-center gap-1">
                     <Star className="w-3 h-3 fill-current" />
                     NEXT
                   </span>
-                  <span className="text-[11px] px-1.5 py-0.2 rounded bg-secondary text-muted-foreground">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-secondary text-muted-foreground font-medium">
                     {todayData.nextTask.category}
                   </span>
                 </div>
-                <h4 className="text-sm font-medium text-foreground truncate">
+                <h4 className="text-sm font-semibold text-foreground truncate">
                   {todayData.nextTask.title}
                 </h4>
               </div>
 
               <div className="flex items-center gap-3 flex-shrink-0 text-xs text-muted-foreground">
-                <span>{formatMinutes(todayData.nextTask.estimatedMinutes || 45)}</span>
+                <span className="font-display font-semibold tabular-nums text-[11px]">{formatMinutes(todayData.nextTask.estimatedMinutes || 45)}</span>
                 <button
                   type="button"
                   onClick={() => onStartFocus(todayData.nextTask)}
-                  className="p-1.5 rounded-lg bg-secondary hover:bg-primary hover:text-primary-foreground text-foreground transition-colors"
+                  className="p-2 rounded-lg bg-secondary hover:bg-primary hover:text-white text-foreground transition-all shadow-2xs"
+                  title="Start Focus"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
                 </button>
@@ -244,14 +254,14 @@ export function CommandCenter({
 
           {/* THEN */}
           {todayData?.thenTask && (
-            <div className="p-4 rounded-xl bg-card/40 border border-border/60 hover:border-border transition-all flex items-center justify-between gap-4">
+            <div className="spider-card p-4 flex items-center justify-between gap-4">
               <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                  <span className="text-[10px] font-display font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                     <Bot className="w-3 h-3" />
                     THEN
                   </span>
-                  <span className="text-[11px] px-1.5 py-0.2 rounded bg-secondary text-muted-foreground">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-secondary text-muted-foreground font-medium">
                     {todayData.thenTask.category}
                   </span>
                 </div>
@@ -261,11 +271,12 @@ export function CommandCenter({
               </div>
 
               <div className="flex items-center gap-3 flex-shrink-0 text-xs text-muted-foreground">
-                <span>{formatMinutes(todayData.thenTask.estimatedMinutes || 45)}</span>
+                <span className="font-display font-semibold tabular-nums text-[11px]">{formatMinutes(todayData.thenTask.estimatedMinutes || 45)}</span>
                 <button
                   type="button"
                   onClick={() => onStartFocus(todayData.thenTask)}
-                  className="p-1.5 rounded-lg bg-secondary hover:bg-primary hover:text-primary-foreground text-foreground transition-colors"
+                  className="p-2 rounded-lg bg-secondary hover:bg-primary hover:text-white text-foreground transition-all shadow-2xs"
+                  title="Start Focus"
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
                 </button>
@@ -275,16 +286,16 @@ export function CommandCenter({
 
           {/* OPTIONAL */}
           {todayData?.optionalTasks && todayData.optionalTasks.length > 0 && (
-            <div className="p-3.5 rounded-xl bg-card/30 border border-dashed border-border/60 space-y-2">
-              <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                <BookOpen className="w-3 h-3" />
+            <div className="spider-card p-4 border-dashed space-y-2.5">
+              <div className="text-[10px] font-display font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <BookOpen className="w-3 h-3 text-primary" />
                 OPTIONAL ({todayData.optionalTasks.length})
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 {todayData.optionalTasks.map((t: any) => (
-                  <div key={t._id} className="flex items-center justify-between text-xs py-1">
+                  <div key={t._id} className="flex items-center justify-between text-xs py-1 px-2 rounded-lg hover:bg-secondary/40 transition-colors">
                     <span className="text-muted-foreground truncate max-w-sm">{t.title}</span>
-                    <span className="text-muted-foreground/80 font-mono text-[11px]">
+                    <span className="text-muted-foreground/80 font-display font-semibold tabular-nums text-[11px]">
                       {formatMinutes(t.estimatedMinutes || 30)}
                     </span>
                   </div>
@@ -296,14 +307,15 @@ export function CommandCenter({
 
         {/* Right 1 Col: Command Signals (Workload, Attention, Goal, Overwhelm) */}
         <div className="space-y-4">
-          {/* Today's Workload Gauge */}
-          <div className="p-4 rounded-xl bg-card border border-border/80 space-y-3 shadow-sm">
+          {/* Today's Workload Capacity Gauge */}
+          <div className="spider-card p-5 space-y-3.5">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold uppercase tracking-wider text-muted-foreground">
-                Today's Workload
+              <span className="font-display font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-primary" />
+                Capacity Gauge
               </span>
               <span
-                className={`font-mono font-medium ${
+                className={`font-display font-bold tabular-nums ${
                   isOverloaded ? "text-red-400" : "text-emerald-400"
                 }`}
               >
@@ -315,51 +327,51 @@ export function CommandCenter({
             <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
               <div
                 className={`h-full transition-all duration-300 ${
-                  isOverloaded ? "bg-red-500" : "bg-primary"
+                  isOverloaded ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-glow-crimson-sm" : "bg-gradient-to-r from-primary to-rose-500"
                 }`}
                 style={{ width: `${Math.min(100, workloadPct)}%` }}
               />
             </div>
 
             {isOverloaded ? (
-              <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-300 flex items-start gap-2">
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/25 text-xs text-red-300 flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium">Plan is unrealistic.</p>
-                  <p className="text-[11px] text-red-300/80">
-                    Overloaded by {formatMinutes(plannedMin - availMin)}.
+                <div className="space-y-1">
+                  <p className="font-semibold text-red-200">Capacity exceeded.</p>
+                  <p className="text-[11px] text-red-300/80 font-display tabular-nums">
+                    Over allocated by {formatMinutes(plannedMin - availMin)}.
                   </p>
                   <button
                     onClick={() => onNavigateTab("planner")}
-                    className="mt-1 text-[11px] font-semibold text-red-400 underline"
+                    className="text-[11px] font-semibold text-red-400 hover:text-red-300 underline block"
                   >
-                    Open Daily Planner to Auto-Balance
+                    Open Daily Planner to Balance
                   </button>
                 </div>
               </div>
             ) : (
               <p className="text-[11px] text-muted-foreground">
-                Workload is balanced within your {user?.preferences?.dailyWorkHours || 5.5}h capacity.
+                Workload balanced within your {user?.preferences?.dailyWorkHours || 5.5}h capacity.
               </p>
             )}
           </div>
 
-          {/* Attention Signals */}
-          <div className="p-4 rounded-xl bg-card border border-border/80 space-y-2.5 shadow-sm">
-            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+          {/* Attention Signals with Spider-Sense Highlights */}
+          <div className="spider-card p-5 space-y-3">
+            <div className="text-xs font-display font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-              Attention
+              <span>Critical Attention</span>
             </div>
 
             <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <div className="flex items-center justify-between py-1.5 border-b border-border/50">
                 <span className="text-muted-foreground">Deadlines this week</span>
-                <span className="font-semibold text-foreground">{attentionData.deadlinesThisWeek}</span>
+                <span className="font-display font-bold tabular-nums text-foreground">{attentionData.deadlinesThisWeek}</span>
               </div>
-              <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <div className="flex items-center justify-between py-1.5 border-b border-border/50">
                 <span className="text-muted-foreground">Overdue tasks</span>
                 <span
-                  className={`font-semibold ${
+                  className={`font-display font-bold tabular-nums ${
                     attentionData.overdueCount > 0 ? "text-red-400" : "text-foreground"
                   }`}
                 >
@@ -368,44 +380,45 @@ export function CommandCenter({
               </div>
               <div className="flex items-center justify-between py-1">
                 <span className="text-muted-foreground">Carried-over tasks</span>
-                <span className="font-semibold text-amber-400">{attentionData.carriedOverCount}</span>
+                <span className="font-display font-bold tabular-nums text-amber-400">{attentionData.carriedOverCount}</span>
               </div>
             </div>
           </div>
 
           {/* Current Goal Progress */}
           {currentGoal && (
-            <div className="p-4 rounded-xl bg-card border border-border/80 space-y-3 shadow-sm">
+            <div className="spider-card p-5 space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <span className="font-display font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <Target className="w-3.5 h-3.5 text-primary" />
-                  Active Goal
+                  Active Target
                 </span>
-                <span className="font-mono text-xs font-semibold text-primary">
+                <span className="font-display tabular-nums text-xs font-bold text-primary">
                   {currentGoal.progress}%
                 </span>
               </div>
 
-              <h4 className="text-xs font-medium text-foreground leading-snug">
+              <h4 className="text-xs font-semibold text-foreground leading-snug">
                 {currentGoal.title}
               </h4>
 
               <div className="w-full h-1.5 rounded-full bg-secondary overflow-hidden">
                 <div
-                  className="h-full bg-primary transition-all duration-300"
+                  className="h-full bg-primary transition-all duration-300 shadow-glow-crimson-sm"
                   style={{ width: `${currentGoal.progress}%` }}
                 />
               </div>
             </div>
           )}
 
-          {/* I'M OVERWHELMED Sanctuary Action Button */}
+          {/* OVERWHELM SANCTUARY ACTION */}
           <button
             type="button"
             onClick={onOpenOverwhelm}
-            className="w-full py-3 rounded-xl bg-secondary/70 hover:bg-secondary border border-border/80 text-xs font-medium text-muted-foreground hover:text-foreground flex items-center justify-center gap-2 transition-all shadow-sm"
+            className="spider-btn-secondary w-full py-3 px-4 border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/60 flex items-center justify-center gap-2 group"
           >
-            I'm Overwhelmed (Simplify UI)
+            <ShieldAlert className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+            <span>Overwhelm Sanctuary</span>
           </button>
         </div>
       </div>

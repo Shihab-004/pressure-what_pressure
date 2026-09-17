@@ -4,6 +4,7 @@ import React from "react";
 import { ShieldCheck, ArrowLeft, Play, CheckCircle2, Clock, Calendar } from "lucide-react";
 import { ITask } from "@/types";
 import { formatMinutes, formatDateLabel } from "@/lib/utils";
+import { SpiderLogo } from "@/components/icons/SpiderLogo";
 
 interface OverwhelmModeProps {
   allPendingCount: number;
@@ -24,85 +25,86 @@ export function OverwhelmMode({
   const visibleTasks = criticalTasks.slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 sm:p-12 animate-fadeIn">
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 sm:p-12 animate-fadeIn web-pattern-bg">
       <div className="w-full max-w-2xl space-y-8 text-left">
         {/* Header */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-medium">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-display font-semibold shadow-2xs">
               <ShieldCheck className="w-4 h-4" />
-              Sanctuary Mode Active
+              <span>Sanctuary Protocol Active</span>
             </div>
 
             <button
               onClick={onExit}
-              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
+              className="spider-btn-secondary spider-btn-sm"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Exit Overwhelm Mode
+              <span>Resume OS</span>
             </button>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
-            Breathe. You only need to do one thing next.
+          <h1 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground leading-tight">
+            Isolate the signal. Focus on one action.
           </h1>
 
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            You currently have <span className="font-semibold text-foreground">{allPendingCount}</span> pending tasks.
-            Everything non-urgent has been temporarily hidden to protect your focus. For now, look only at these:
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Non-urgent items sequestered ({allPendingCount} queued). Peripheral distractions muted.
           </p>
         </div>
 
         {/* Focused Tasks List */}
         <div className="space-y-3">
           {visibleTasks.length === 0 ? (
-            <div className="p-8 rounded-2xl bg-card border border-border text-center space-y-2">
-              <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
-              <p className="text-sm font-medium text-foreground">All immediate critical items are clear.</p>
-              <p className="text-xs text-muted-foreground">Take a well-deserved rest.</p>
+            <div className="spider-card p-8 text-center space-y-2">
+              <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
+              <p className="text-base font-display font-bold text-foreground">Critical path clear.</p>
+              <p className="text-xs text-muted-foreground">All priority items complete.</p>
             </div>
           ) : (
             visibleTasks.map((task, index) => (
               <div
                 key={task._id}
-                className="p-5 rounded-2xl bg-card/80 border border-border/80 hover:border-primary/50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
+                className="spider-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
               >
-                <div className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-secondary text-foreground text-xs font-bold flex items-center justify-center border border-border mt-0.5">
+                <div className="flex items-start gap-3.5 min-w-0">
+                  <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-primary/20 text-primary text-xs font-display font-bold flex items-center justify-center border border-primary/30 mt-0.5 shadow-glow-crimson-sm">
                     {index + 1}
                   </span>
-                  <div className="space-y-1">
+                  <div className="space-y-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-primary px-2 py-0.5 rounded bg-primary/10">
+                      <span className="text-[10px] font-display font-semibold text-primary px-2 py-0.5 rounded bg-primary/10 border border-primary/20 uppercase tracking-wider">
                         {task.category}
                       </span>
                       {task.deadline && (
-                        <span className="text-xs text-amber-400 flex items-center gap-1">
+                        <span className="text-xs text-amber-400 font-display font-medium tabular-nums flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {formatDateLabel(task.deadline)}
                         </span>
                       )}
                     </div>
-                    <h3 className="text-base font-medium text-foreground">{task.title}</h3>
+                    <h3 className="text-base font-semibold text-foreground leading-snug break-words">
+                      {task.title}
+                    </h3>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 sm:self-center self-end">
+                <div className="flex items-center gap-2.5 w-full sm:w-auto sm:self-center flex-shrink-0">
                   <button
                     type="button"
                     onClick={() => onStartFocus(task)}
-                    className="px-3.5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium flex items-center gap-1.5 shadow-sm transition-all"
+                    className="spider-btn-primary spider-btn-sm flex-1 sm:flex-initial justify-center"
                   >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    Focus ({formatMinutes(task.estimatedMinutes || 45)})
+                    <Play className="w-3 h-3 fill-current" />
+                    <span>Focus ({formatMinutes(task.estimatedMinutes || 45)})</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => onCompleteTask(task._id)}
-                    className="px-3.5 py-2 rounded-xl bg-secondary hover:bg-secondary/80 text-foreground border border-border text-xs font-medium flex items-center gap-1 transition-colors"
+                    className="spider-btn-secondary spider-btn-sm flex-1 sm:flex-initial justify-center text-emerald-400 border-emerald-500/30 hover:border-emerald-500/60"
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    Done
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Done</span>
                   </button>
                 </div>
               </div>
@@ -111,11 +113,11 @@ export function OverwhelmMode({
         </div>
 
         {/* Footer info */}
-        <div className="pt-4 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground">
-          <span>{Math.max(0, allPendingCount - visibleTasks.length)} tasks safely stored out of sight.</span>
+        <div className="pt-4 border-t border-border/70 flex items-center justify-between text-xs text-muted-foreground font-display">
+          <span>{Math.max(0, allPendingCount - visibleTasks.length)} tasks held in safe standby.</span>
           <button
             onClick={onExit}
-            className="text-xs font-medium text-primary hover:underline"
+            className="text-xs font-bold text-primary hover:underline"
           >
             Show full workspace
           </button>

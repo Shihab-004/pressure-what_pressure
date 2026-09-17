@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Play, Pause, Square, CheckCircle, BellOff, X, AlertCircle } from "lucide-react";
+import { Play, Pause, Square, CheckCircle, BellOff, X, AlertCircle, Sparkles } from "lucide-react";
 import { ITask } from "@/types";
 import { useApi } from "@/lib/api/useApi";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { SpiderLogo } from "@/components/icons/SpiderLogo";
 
 interface FocusTimerModalProps {
   task: ITask | null;
@@ -96,10 +97,10 @@ export function FocusTimerModal({
       toast.error(error);
     } else {
       if (isCompleted) {
-        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
-        toast.success(`Task completed! Logged ${durationMinutes} minutes.`);
+        confetti({ particleCount: 90, spread: 80, origin: { y: 0.6 } });
+        toast.success(`Task completed! Logged ${durationMinutes} minutes of deep focus.`);
       } else {
-        toast.info(`Session saved: logged ${durationMinutes} minutes of focus.`);
+        toast.info(`Session recorded: logged ${durationMinutes} minutes of focus.`);
       }
       onSessionRecorded();
       onClose();
@@ -107,8 +108,8 @@ export function FocusTimerModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg animate-fadeIn">
-      <div className="w-full max-w-xl bg-card border border-border/80 rounded-3xl p-8 flex flex-col items-center text-center shadow-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-fadeIn">
+      <div className="w-full max-w-xl spider-card p-6 sm:p-8 flex flex-col items-center text-center shadow-2xl relative animate-scaleIn">
         <button
           onClick={onClose}
           className="absolute top-5 right-5 p-2 text-muted-foreground hover:text-foreground rounded-full hover:bg-secondary transition-colors"
@@ -117,53 +118,54 @@ export function FocusTimerModal({
         </button>
 
         {/* Task Title & Badge */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-xs font-medium mb-4">
-          <BellOff className="w-3.5 h-3.5 text-primary" />
-          Focus Sanctuary · {task.category}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/15 text-primary border border-primary/30 text-xs font-display font-semibold mb-3 shadow-glow-crimson-sm">
+          <SpiderLogo className="w-3.5 h-3.5 text-primary" />
+          <span>Deep Focus Protocol · {task.category}</span>
         </div>
 
-        <h2 className="text-2xl font-semibold text-foreground max-w-md line-clamp-2 mb-2">
+        <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground max-w-md line-clamp-2 mb-2 leading-snug">
           {task.title}
         </h2>
 
         {task.description && (
-          <p className="text-xs text-muted-foreground max-w-sm mb-6 line-clamp-2">
+          <p className="text-xs text-muted-foreground max-w-sm mb-4 line-clamp-2 leading-relaxed font-sans">
             {task.description}
           </p>
         )}
 
-        {/* Timer Display */}
-        <div className="my-8">
-          <div className="text-7xl font-mono font-bold tracking-tight text-foreground select-none">
+        {/* Timer Display with Space Grotesk Digital Readout */}
+        <div className="my-6 sm:my-8 relative">
+          <div className="text-6xl sm:text-7xl font-display font-black tracking-tight tabular-nums text-foreground select-none drop-shadow-[0_0_30px_rgba(229,9,20,0.5)]">
             {formattedTime}
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
+          <p className="text-xs text-muted-foreground mt-2 font-display tabular-nums tracking-wide">
             Elapsed: {Math.floor(elapsedSeconds / 60)}m {elapsedSeconds % 60}s · Target:{" "}
             {task.estimatedMinutes || 45}m
           </p>
         </div>
 
-        {/* Timer Controls */}
+        {/* Timer Control Button */}
         <div className="flex items-center gap-4 mb-6">
           <button
             type="button"
             onClick={() => setIsRunning(!isRunning)}
-            className="p-4 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transition-transform active:scale-95"
+            className="w-16 h-16 rounded-full bg-gradient-to-tr from-primary via-red-600 to-rose-600 hover:from-primary/90 hover:to-rose-500 text-white flex items-center justify-center shadow-glow-crimson border-2 border-red-400/40 active:scale-95 transition-all"
+            title={isRunning ? "Pause" : "Resume"}
           >
-            {isRunning ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current" />}
+            {isRunning ? <Pause className="w-6 h-6 fill-current" /> : <Play className="w-6 h-6 fill-current ml-0.5" />}
           </button>
         </div>
 
         {/* Interruption Logger */}
-        <div className="w-full bg-secondary/30 border border-border/60 rounded-xl p-3 mb-6 text-left">
-          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-            <span>Logged Interruptions: {interruptions}</span>
+        <div className="w-full bg-secondary/40 border border-border/80 rounded-xl p-3.5 mb-6 text-left">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5 font-display">
+            <span className="font-semibold text-foreground/90">Logged Interruptions: {interruptions}</span>
             <button
               type="button"
               onClick={() => setInterruptions((prev) => prev + 1)}
-              className="text-xs text-primary hover:underline"
+              className="text-xs text-primary font-bold hover:underline"
             >
-              + Record Interruption
+              + Log Interruption
             </button>
           </div>
           {interruptions > 0 && (
@@ -171,30 +173,30 @@ export function FocusTimerModal({
               type="text"
               value={interruptionNote}
               onChange={(e) => setInterruptionNote(e.target.value)}
-              placeholder="Brief note (e.g. phone call, urgent question)..."
-              className="w-full px-2.5 py-1.5 bg-background border border-border rounded text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/60"
+              placeholder="Brief note (context switch, urgent communication)..."
+              className="w-full px-3 py-1.5 bg-card border border-border/80 rounded-lg text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/60"
             />
           )}
         </div>
 
         {/* Action Buttons */}
-        <div className="w-full flex items-center gap-3">
+        <div className="w-full flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
           <button
             type="button"
             disabled={saving}
             onClick={() => handleFinish(false)}
-            className="flex-1 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground text-xs font-medium rounded-xl border border-border/80 transition-colors"
+            className="spider-btn-secondary flex-1 py-3"
           >
-            Save Session & Stop
+            Save & Exit
           </button>
           <button
             type="button"
             disabled={saving}
             onClick={() => handleFinish(true)}
-            className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 shadow-sm transition-colors"
+            className="spider-btn-emerald flex-1 py-3"
           >
-            <CheckCircle className="w-4 h-4" />
-            Complete Task
+            <CheckCircle className="w-4 h-4 stroke-[2.5]" />
+            <span>Mark Complete</span>
           </button>
         </div>
       </div>

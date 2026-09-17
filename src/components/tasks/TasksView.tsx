@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { TaskCard } from "./TaskCard";
 import { QuickAddBar } from "./QuickAddBar";
 import { isTaskBlocked } from "@/lib/engine/recommendationEngine";
+import { SpiderLogo } from "@/components/icons/SpiderLogo";
 
 interface TasksViewProps {
   onStartFocus: (task: ITask) => void;
@@ -129,11 +130,11 @@ export function TasksView({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="text-xs uppercase tracking-widest text-muted-foreground font-semibold flex items-center gap-1.5">
-            <CheckSquare className="w-4 h-4 text-primary" />
+          <div className="text-[11px] uppercase tracking-widest text-muted-foreground font-display font-bold flex items-center gap-1.5">
+            <SpiderLogo className="w-4 h-4 text-primary" />
             Task Registry & Priority Matrix
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl font-display font-extrabold tracking-tight text-foreground">
             All Work & Actions
           </h1>
         </div>
@@ -141,21 +142,23 @@ export function TasksView({
         <button
           type="button"
           onClick={onOpenNewTask}
-          className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold flex items-center gap-1.5 shadow-sm self-start sm:self-auto"
+          className="spider-btn-primary self-start sm:self-auto"
         >
-          <Plus className="w-3.5 h-3.5" />
-          Create Task
+          <Plus className="w-4 h-4 stroke-[2.5]" />
+          <span>New Task</span>
         </button>
       </div>
 
       {/* Quick Add Bar */}
-      <QuickAddBar onTaskCreated={loadTasks} />
+      <div className="spider-card p-2">
+        <QuickAddBar onTaskCreated={loadTasks} />
+      </div>
 
       {/* Filter Tabs & Search Bar */}
       <div className="space-y-3">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border pb-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-border/80 pb-3">
           {/* Status Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-semibold">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-semibold scrollbar-none">
             {[
               { key: "active", label: "Active" },
               { key: "today", label: "Today" },
@@ -166,10 +169,10 @@ export function TasksView({
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as any)}
-                className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-display tracking-wide uppercase transition-all whitespace-nowrap ${
                   activeTab === tab.key
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                    ? "bg-primary text-white shadow-glow-crimson font-bold border border-red-400/40"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/70"
                 }`}
               >
                 {tab.label}
@@ -184,22 +187,22 @@ export function TasksView({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filter tasks..."
-              className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 border border-border rounded-lg text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60"
+              placeholder="Search registry..."
+              className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 border border-border/80 rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/60 font-sans"
             />
           </div>
         </div>
 
         {/* Category Pill Filters */}
-        <div className="flex items-center gap-1.5 overflow-x-auto text-xs py-1">
+        <div className="flex items-center gap-1.5 overflow-x-auto text-xs py-1 scrollbar-none">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-colors whitespace-nowrap ${
+              className={`px-3 py-1 rounded-md text-[11px] font-display font-medium uppercase tracking-wider border transition-all whitespace-nowrap ${
                 selectedCategory === cat
-                  ? "bg-secondary text-foreground border-primary/50"
-                  : "bg-transparent text-muted-foreground border-border/70 hover:bg-secondary/40"
+                  ? "bg-primary/20 text-primary border-primary/50 font-bold shadow-glow-crimson-sm"
+                  : "bg-secondary/40 text-muted-foreground border-border/80 hover:bg-secondary hover:text-foreground"
               }`}
             >
               {cat}
@@ -210,13 +213,16 @@ export function TasksView({
 
       {/* Task List */}
       {loading ? (
-        <div className="py-20 text-center text-xs text-muted-foreground">Loading tasks...</div>
+        <div className="py-20 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2">
+          <RefreshCw className="w-5 h-5 text-primary animate-spin" />
+          <span>Synchronizing registry...</span>
+        </div>
       ) : filteredTasks.length === 0 ? (
-        <div className="p-8 rounded-2xl bg-card border border-border text-center space-y-2">
-          <CheckSquare className="w-8 h-8 text-muted-foreground mx-auto" />
-          <p className="text-sm font-medium text-foreground">No tasks match the current filters.</p>
-          <p className="text-xs text-muted-foreground">
-            Clear filters or use Quick Add to create a new task.
+        <div className="spider-card p-10 text-center space-y-2.5">
+          <CheckSquare className="w-10 h-10 text-muted-foreground/50 mx-auto" />
+          <p className="text-sm font-display font-bold text-foreground">No tasks match criteria</p>
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+            Use the Quick Add bar above to register a new target.
           </p>
         </div>
       ) : (

@@ -5,6 +5,7 @@ import { Brain, Sparkles, Check, Trash2, Loader2, Plus, X } from "lucide-react";
 import { useApi } from "@/lib/api/useApi";
 import { toast } from "sonner";
 import { TaskCategory, TaskPriority } from "@/types";
+import { SpiderLogo } from "@/components/icons/SpiderLogo";
 
 interface BrainDumpModalProps {
   isOpen: boolean;
@@ -93,18 +94,18 @@ export function BrainDumpModal({ isOpen, onClose, onSaved }: BrainDumpModalProps
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-      <div className="w-full max-w-2xl bg-card border border-border rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn">
+      <div className="w-full max-w-2xl spider-card shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-scaleIn">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-card/50">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/80 bg-secondary/30">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-rose-700 text-white flex items-center justify-center shadow-glow-crimson-sm border border-red-400/30">
               <Brain className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-foreground">Brain Dump → Structured Tasks</h2>
+              <h2 className="text-base font-display font-bold text-foreground">Brain Dump Engine</h2>
               <p className="text-xs text-muted-foreground">
-                Type or paste unstructured thoughts, notes, or mixed Bengali/English sentences.
+                Paste unfiltered notes or stream of consciousness to auto-extract structured tasks.
               </p>
             </div>
           </div>
@@ -123,29 +124,29 @@ export function BrainDumpModal({ isOpen, onClose, onSaved }: BrainDumpModalProps
               rows={4}
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
-              placeholder="e.g. কালকে MTE lab আছে, OSI assignment শেষ করতে হবে, Rover admin bug fix করতে হবে, AWS IoT শুরু করতে চাই..."
-              className="w-full p-3 bg-secondary/50 border border-border/80 rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/60 focus:border-primary/60 resize-none font-sans"
+              placeholder="Dump thoughts here (e.g. 'Fix rover telemetry tomorrow 30m, study OSI model tonight, prepare review slides')..."
+              className="w-full p-3.5 bg-secondary/50 border border-border/80 rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-1 focus:ring-primary/60 focus:border-primary/60 resize-none font-sans leading-relaxed"
             />
 
-            <div className="flex justify-between items-center mt-2">
-              <span className="text-xs text-muted-foreground">
-                Multi-line, comma-separated, or bulleted ideas.
+            <div className="flex justify-between items-center mt-2.5">
+              <span className="text-[11px] text-muted-foreground font-display">
+                Multi-line or comma-separated actions detected automatically.
               </span>
               <button
                 type="button"
                 onClick={handleParse}
                 disabled={!rawText.trim() || parsing}
-                className="px-3.5 py-1.5 bg-secondary hover:bg-secondary/80 disabled:opacity-50 text-foreground border border-border/80 rounded-md text-xs font-medium flex items-center gap-1.5 transition-colors"
+                className="spider-btn-primary spider-btn-sm disabled:opacity-40"
               >
                 {parsing ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-                    Analyzing...
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Parsing Structure...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-3.5 h-3.5 text-primary" />
-                    Structure Tasks
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Extract Tasks</span>
                   </>
                 )}
               </button>
@@ -154,17 +155,17 @@ export function BrainDumpModal({ isOpen, onClose, onSaved }: BrainDumpModalProps
 
           {/* Extracted Candidates Preview */}
           {candidates.length > 0 && (
-            <div className="space-y-2 pt-2 border-t border-border">
+            <div className="space-y-2.5 pt-3 border-t border-border/80">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  Extracted Tasks ({candidates.length}) — Review & Confirm
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Extracted Candidates ({candidates.length}) — Review & Confirm
                 </h3>
                 <button
                   type="button"
                   onClick={addCandidate}
-                  className="text-xs text-primary hover:underline flex items-center gap-1"
+                  className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
                 >
-                  <Plus className="w-3 h-3" /> Add item
+                  <Plus className="w-3 h-3 stroke-[2.5]" /> Add item
                 </button>
               </div>
 
@@ -172,20 +173,20 @@ export function BrainDumpModal({ isOpen, onClose, onSaved }: BrainDumpModalProps
                 {candidates.map((c, idx) => (
                   <div
                     key={idx}
-                    className="p-3 bg-secondary/40 border border-border/60 rounded-lg flex flex-col md:flex-row md:items-center gap-2.5 text-sm"
+                    className="p-3 bg-secondary/40 border border-border/80 rounded-xl flex flex-col md:flex-row md:items-center gap-2.5 text-xs shadow-2xs hover:border-primary/40 transition-colors"
                   >
                     <input
                       type="text"
                       value={c.title}
                       onChange={(e) => updateCandidate(idx, "title", e.target.value)}
-                      className="flex-1 bg-transparent border-b border-transparent hover:border-border focus:border-primary focus:outline-none text-foreground font-medium text-xs md:text-sm px-1"
+                      className="flex-1 bg-transparent border-b border-transparent hover:border-border focus:border-primary focus:outline-none text-foreground font-semibold px-1"
                     />
 
                     <div className="flex items-center gap-2 flex-wrap">
                       <select
                         value={c.category}
                         onChange={(e) => updateCandidate(idx, "category", e.target.value)}
-                        className="bg-card border border-border/80 rounded px-2 py-1 text-xs text-foreground focus:outline-none"
+                        className="bg-card border border-border/80 rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
                       >
                         <option value="University">University</option>
                         <option value="Rover">Rover</option>
@@ -198,7 +199,7 @@ export function BrainDumpModal({ isOpen, onClose, onSaved }: BrainDumpModalProps
                       <select
                         value={c.priority}
                         onChange={(e) => updateCandidate(idx, "priority", e.target.value)}
-                        className="bg-card border border-border/80 rounded px-2 py-1 text-xs text-foreground focus:outline-none"
+                        className="bg-card border border-border/80 rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none"
                       >
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
@@ -206,14 +207,14 @@ export function BrainDumpModal({ isOpen, onClose, onSaved }: BrainDumpModalProps
                         <option value="critical">Critical</option>
                       </select>
 
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground font-display tabular-nums">
                         <input
                           type="number"
                           value={c.estimatedMinutes}
                           onChange={(e) =>
                             updateCandidate(idx, "estimatedMinutes", parseInt(e.target.value, 10) || 15)
                           }
-                          className="w-12 bg-card border border-border/80 rounded px-1.5 py-1 text-xs text-center text-foreground focus:outline-none"
+                          className="w-12 bg-card border border-border/80 rounded-lg px-1.5 py-1 text-xs text-center text-foreground focus:outline-none"
                         />
                         <span>min</span>
                       </div>
@@ -221,7 +222,7 @@ export function BrainDumpModal({ isOpen, onClose, onSaved }: BrainDumpModalProps
                       <button
                         type="button"
                         onClick={() => removeCandidate(idx)}
-                        className="p-1 text-muted-foreground hover:text-red-400 rounded transition-colors ml-auto"
+                        className="p-1.5 text-muted-foreground hover:text-red-400 rounded-lg hover:bg-card transition-colors ml-auto"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -234,11 +235,11 @@ export function BrainDumpModal({ isOpen, onClose, onSaved }: BrainDumpModalProps
         </div>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-3 border-t border-border bg-card/80">
+        <div className="flex items-center justify-end gap-3 px-6 py-3.5 border-t border-border/80 bg-secondary/20">
           <button
             type="button"
             onClick={onClose}
-            className="px-3.5 py-2 text-xs font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary transition-colors"
+            className="spider-btn-secondary spider-btn-sm"
           >
             Cancel
           </button>
@@ -246,14 +247,14 @@ export function BrainDumpModal({ isOpen, onClose, onSaved }: BrainDumpModalProps
             type="button"
             disabled={candidates.length === 0 || saving}
             onClick={handleSaveAll}
-            className="px-4 py-2 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground text-xs font-medium rounded-lg flex items-center gap-1.5 shadow-sm transition-all"
+            className="spider-btn-primary spider-btn-sm disabled:opacity-40"
           >
             {saving ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
-              <Check className="w-3.5 h-3.5" />
+              <Check className="w-3.5 h-3.5 stroke-[2.5]" />
             )}
-            Save {candidates.length} Task{candidates.length === 1 ? "" : "s"}
+            <span>Save {candidates.length} Task{candidates.length === 1 ? "" : "s"}</span>
           </button>
         </div>
       </div>

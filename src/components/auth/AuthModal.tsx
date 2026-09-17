@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { LogIn, Key, Mail, User, X, Loader2, ShieldCheck, ArrowRight } from "lucide-react";
+import { Key, Mail, User, X, Loader2, ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { GoogleIcon } from "@/components/icons/GoogleIcon";
+import { SpiderLogo } from "@/components/icons/SpiderLogo";
 import { toast } from "sonner";
 
 interface AuthModalProps {
@@ -18,16 +19,32 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
 
-  const { login, register, resetPassword, signInWithGoogle, loginDemo } = useAuth();
+  const {
+    login,
+    register,
+    resetPassword,
+    signInWithGoogle,
+    loginDemo,
+    logout,
+    user,
+    firebaseUser,
+    isDemoUser,
+  } = useAuth();
 
   if (!isOpen) return null;
+
+  const avatarUrl = user?.avatar || firebaseUser?.photoURL;
+  const displayName = user?.name || firebaseUser?.displayName || "Operator";
+  const displayEmail = isDemoUser ? "Local Session" : user?.email || firebaseUser?.email || "Signed In";
 
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
     try {
       await signInWithGoogle();
       toast.success("Successfully authenticated with Google!");
+      setIsSwitching(false);
       onClose();
     } catch (err: any) {
       toast.error(err.message || "Google sign-in failed. Please try again.");
@@ -44,10 +61,12 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
       if (mode === "login") {
         await login(email, password);
         toast.success("Welcome back!");
+        setIsSwitching(false);
         onClose();
       } else if (mode === "register") {
         await register(email, password, name);
         toast.success("Account created successfully!");
+        setIsSwitching(false);
         onClose();
       } else if (mode === "reset") {
         await resetPassword(email);
@@ -66,181 +85,276 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     await loginDemo(username);
     setLoading(false);
     toast.success(`Switched to demo user: ${username}`);
+    setIsSwitching(false);
     onClose();
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl p-6 space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+      <div className="w-full max-w-md spider-card p-6 sm:p-7 space-y-5 shadow-2xl animate-scaleIn">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border pb-3">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-primary" />
-            <h2 className="text-base font-semibold text-foreground">
-              {mode === "login" && "Sign In to Your Workspace"}
-              {mode === "register" && "Create Private Account"}
-              {mode === "reset" && "Reset Password"}
+        <div className="flex items-center justify-between border-b border-border/80 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary via-red-600 to-rose-700 flex items-center justify-center text-white shadow-glow-crimson-sm border border-red-400/30">
+              <SpiderLogo className="w-4 h-4 text-white fill-white" />
+            </div>
+            <h2 className="text-base font-display font-bold text-foreground">
+              {user && !isSwitching
+                ? "Active Account Profile"
+                : mode === "login"
+                ? "Authorize Workspace"
+                : mode === "register"
+                ? "Initialize Account"
+                : "Password Recovery"}
             </h2>
           </div>
           <button
-            onClick={onClose}
-            className="p-1 text-muted-foreground hover:text-foreground rounded hover:bg-secondary transition-colors"
+            onClick={() => {
+              setIsSwitching(false);
+              onClose();
+            }}
+            className="p-1 text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Google OAuth Button (Available on both Login & Register modes) */}
-        {mode !== "reset" && (
-          <div className="space-y-4">
-            <button
-              type="button"
-              disabled={googleLoading || loading}
-              onClick={handleGoogleSignIn}
-              className="w-full py-2.5 px-4 bg-background hover:bg-secondary/70 text-foreground border border-border/90 hover:border-border font-medium rounded-xl text-xs flex items-center justify-center gap-3 shadow-xs transition-all active:scale-[0.99] disabled:opacity-60"
-            >
-              {googleLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin text-primary" />
-              ) : (
-                <GoogleIcon className="w-4 h-4" />
-              )}
-              <span>Continue with Google</span>
-            </button>
-
-            <div className="relative flex items-center justify-center">
-              <div className="w-full border-t border-border/70" />
-              <span className="bg-card px-2 text-[11px] text-muted-foreground uppercase tracking-wider font-mono absolute">
-                or continue with email
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Email & Password Form */}
-        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-          {mode === "register" && (
-            <div>
-              <label className="block font-medium text-muted-foreground mb-1">Your Name</label>
-              <div className="relative">
-                <User className="w-4 h-4 text-muted-foreground absolute left-3 top-2.5" />
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Alex Rahman"
-                  className="w-full pl-9 pr-3 py-2 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60"
-                />
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="block font-medium text-muted-foreground mb-1">Email Address</label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-2.5" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@university.edu"
-                className="w-full pl-9 pr-3 py-2 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60"
-              />
-            </div>
-          </div>
-
-          {mode !== "reset" && (
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="font-medium text-muted-foreground">Password</label>
-                {mode === "login" && (
-                  <button
-                    type="button"
-                    onClick={() => setMode("reset")}
-                    className="text-[11px] text-primary hover:underline"
-                  >
-                    Forgot password?
-                  </button>
+        {/* Authenticated User Profile View */}
+        {user && !isSwitching ? (
+          <div className="space-y-5 text-center py-2">
+            <div className="relative inline-block mx-auto">
+              <div className="w-20 h-20 rounded-full bg-primary/20 text-primary border-2 border-primary/50 flex items-center justify-center text-2xl font-display font-black overflow-hidden shadow-glow-crimson mx-auto">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                ) : (
+                  displayName.charAt(0) || "U"
                 )}
               </div>
-              <div className="relative">
-                <Key className="w-4 h-4 text-muted-foreground absolute left-3 top-2.5" />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-9 pr-3 py-2 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60"
-                />
+              <span className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-card shadow-xs" />
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="text-lg font-display font-extrabold text-foreground">{displayName}</h3>
+              <p className="text-xs font-display text-muted-foreground flex items-center justify-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-primary" />
+                <span>{displayEmail}</span>
+              </p>
+              <div className="pt-1.5">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[11px] font-display font-bold text-emerald-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {isDemoUser ? "Active Demo Session" : "Verified Google Account"}
+                </span>
               </div>
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={loading || googleLoading}
-            className="w-full py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg flex items-center justify-center gap-1.5 shadow-sm transition-all text-xs"
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <>
-                {mode === "login" && "Sign In with Email"}
-                {mode === "register" && "Create Account"}
-                {mode === "reset" && "Send Reset Link"}
-                <ArrowRight className="w-3.5 h-3.5" />
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* Mode Switcher */}
-        <div className="text-center text-xs text-muted-foreground pt-1 border-t border-border">
-          {mode === "login" ? (
-            <p>
-              Don't have an account?{" "}
+            <div className="pt-3 border-t border-border/80 flex flex-col gap-2.5">
               <button
-                onClick={() => setMode("register")}
-                className="font-medium text-primary hover:underline"
+                type="button"
+                onClick={onClose}
+                className="spider-btn-primary w-full py-2.5"
               >
-                Sign up
+                Continue to Workspace
               </button>
-            </p>
-          ) : (
-            <p>
-              Already have an account?{" "}
-              <button
-                onClick={() => setMode("login")}
-                className="font-medium text-primary hover:underline"
-              >
-                Sign in
-              </button>
-            </p>
-          )}
-        </div>
-
-        {/* Fast Local Demo Switcher */}
-        <div className="pt-2 border-t border-border space-y-2 text-center">
-          <span className="text-[11px] text-muted-foreground">Or switch local test session:</span>
-          <div className="flex items-center justify-center gap-2">
-            <button
-              type="button"
-              onClick={() => handleQuickDemo("engineer")}
-              className="px-2.5 py-1 rounded bg-secondary hover:bg-secondary/80 text-[11px] text-foreground border border-border"
-            >
-              Demo Engineer
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickDemo("student")}
-              className="px-2.5 py-1 rounded bg-secondary hover:bg-secondary/80 text-[11px] text-foreground border border-border"
-            >
-              Demo Student
-            </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsSwitching(true)}
+                  className="spider-btn-secondary flex-1 py-2 text-xs"
+                >
+                  Switch Account
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await logout();
+                    toast.success("Signed out successfully");
+                    onClose();
+                  }}
+                  className="spider-btn-secondary flex-1 py-2 text-xs text-red-400 hover:text-red-300 border-red-500/30 hover:border-red-500/60"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Back button if user was already authenticated but wanted to switch */}
+            {user && (
+              <div className="flex items-center justify-between pb-1 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setIsSwitching(false)}
+                  className="text-primary hover:underline font-display font-semibold flex items-center gap-1"
+                >
+                  ← Back to current profile
+                </button>
+              </div>
+            )}
+
+            {/* Google OAuth Button */}
+            {mode !== "reset" && (
+              <div className="space-y-4">
+                <button
+                  type="button"
+                  disabled={googleLoading || loading}
+                  onClick={handleGoogleSignIn}
+                  className="spider-btn-secondary w-full py-2.5"
+                >
+                  {googleLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  ) : (
+                    <GoogleIcon className="w-4 h-4" />
+                  )}
+                  <span>Continue with Google</span>
+                </button>
+
+                <div className="relative flex items-center justify-center">
+                  <div className="w-full border-t border-border/80" />
+                  <span className="bg-card px-2 text-[10px] text-muted-foreground uppercase tracking-widest font-display font-bold absolute">
+                    or email credentials
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Email & Password Form */}
+            <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+              {mode === "register" && (
+                <div>
+                  <label className="block font-display font-bold text-muted-foreground mb-1 uppercase text-[10px] tracking-wider">
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <User className="w-4 h-4 text-muted-foreground absolute left-3.5 top-2.5" />
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Operator name"
+                      className="w-full pl-10 pr-3.5 py-2 bg-secondary/50 border border-border/80 rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60 font-sans"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block font-display font-bold text-muted-foreground mb-1 uppercase text-[10px] tracking-wider">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-muted-foreground absolute left-3.5 top-2.5" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="user@example.com"
+                    className="w-full pl-10 pr-3.5 py-2 bg-secondary/50 border border-border/80 rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60 font-sans"
+                  />
+                </div>
+              </div>
+
+              {mode !== "reset" && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="font-display font-bold text-muted-foreground uppercase text-[10px] tracking-wider">
+                      Password
+                    </label>
+                    {mode === "login" && (
+                      <button
+                        type="button"
+                        onClick={() => setMode("reset")}
+                        className="text-[10px] text-primary hover:underline font-display"
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Key className="w-4 h-4 text-muted-foreground absolute left-3.5 top-2.5" />
+                    <input
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full pl-10 pr-3.5 py-2 bg-secondary/50 border border-border/80 rounded-lg text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60 font-sans"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading || googleLoading}
+                className="spider-btn-primary w-full py-3"
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <span>
+                      {mode === "login" && "Authorize & Enter"}
+                      {mode === "register" && "Create Account"}
+                      {mode === "reset" && "Send Reset Link"}
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Mode Switcher */}
+            <div className="text-center text-xs text-muted-foreground pt-1 border-t border-border/80">
+              {mode === "login" ? (
+                <p>
+                  New operator?{" "}
+                  <button
+                    onClick={() => setMode("register")}
+                    className="font-bold text-primary hover:underline font-display"
+                  >
+                    Sign up
+                  </button>
+                </p>
+              ) : (
+                <p>
+                  Existing account?{" "}
+                  <button
+                    onClick={() => setMode("login")}
+                    className="font-bold text-primary hover:underline font-display"
+                  >
+                    Sign in
+                  </button>
+                </p>
+              )}
+            </div>
+
+            {/* Fast Local Demo Switcher */}
+            <div className="pt-2 border-t border-border/80 space-y-2 text-center">
+              <span className="text-[10px] text-muted-foreground font-display font-bold uppercase tracking-wider">
+                Quick Session:
+              </span>
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemo("engineer")}
+                  className="spider-btn-secondary spider-btn-sm text-[11px]"
+                >
+                  Demo Engineer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickDemo("student")}
+                  className="spider-btn-secondary spider-btn-sm text-[11px]"
+                >
+                  Demo Student
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -11,11 +11,11 @@ import {
   Trash2,
   RotateCcw,
   Sparkles,
-  Layers,
 } from "lucide-react";
 import { useApi } from "@/lib/api/useApi";
 import { toast } from "sonner";
 import { formatMinutes } from "@/lib/utils";
+import { SpiderLogo } from "@/components/icons/SpiderLogo";
 
 export function AnalyticsView() {
   const [data, setData] = useState<any>(null);
@@ -56,8 +56,9 @@ export function AnalyticsView() {
 
   if (loading) {
     return (
-      <div className="py-24 text-center text-xs text-muted-foreground">
-        Aggregating factual analytics and patterns...
+      <div className="py-24 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2">
+        <SpiderLogo className="w-6 h-6 text-primary animate-pulse" />
+        <span>Aggregating factual analytics and behavioral patterns...</span>
       </div>
     );
   }
@@ -82,7 +83,7 @@ export function AnalyticsView() {
       {/* Header */}
       <div>
         <div className="text-xs uppercase tracking-widest text-muted-foreground font-semibold flex items-center gap-1.5">
-          <BarChart3 className="w-4 h-4 text-primary" />
+          <SpiderLogo className="w-4 h-4 text-primary" />
           Evidence-Based Productive Analytics
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -92,42 +93,42 @@ export function AnalyticsView() {
 
       {/* Top 4 Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-card border border-border shadow-sm space-y-1">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="spider-card p-5 space-y-1">
+          <span className="text-[11px] font-display font-bold uppercase tracking-wider text-muted-foreground">
             Weekly Completion
           </span>
-          <div className="text-3xl font-mono font-bold text-foreground">
+          <div className="text-3xl font-display font-extrabold tabular-nums text-foreground">
             {weekly.completionRate}%
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground font-display tabular-nums">
             {weekly.completed} of {weekly.planned} planned tasks
           </p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-card border border-border shadow-sm space-y-1">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="spider-card p-5 space-y-1">
+          <span className="text-[11px] font-display font-bold uppercase tracking-wider text-muted-foreground">
             Focus Time Logged
           </span>
-          <div className="text-3xl font-mono font-bold text-primary">
+          <div className="text-3xl font-display font-extrabold tabular-nums text-primary">
             {formatMinutes(weekly.focusMinutes)}
           </div>
-          <p className="text-[11px] text-muted-foreground">Recorded in deep work sessions</p>
+          <p className="text-[11px] text-muted-foreground font-display">Deep work protocol</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-card border border-border shadow-sm space-y-1">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="spider-card p-5 space-y-1">
+          <span className="text-[11px] font-display font-bold uppercase tracking-wider text-muted-foreground">
             Carried-Over Tasks
           </span>
-          <div className="text-3xl font-mono font-bold text-amber-400">{weekly.carriedOver}</div>
-          <p className="text-[11px] text-muted-foreground">Rescheduled across days</p>
+          <div className="text-3xl font-display font-extrabold tabular-nums text-amber-400">{weekly.carriedOver}</div>
+          <p className="text-[11px] text-muted-foreground font-display">Rescheduled items</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-card border border-border shadow-sm space-y-1">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="spider-card p-5 space-y-1">
+          <span className="text-[11px] font-display font-bold uppercase tracking-wider text-muted-foreground">
             Estimation Bias
           </span>
           <div
-            className={`text-3xl font-mono font-bold ${
+            className={`text-3xl font-display font-extrabold tabular-nums ${
               (estimation?.overallBiasPercentage || 0) > 15
                 ? "text-red-400"
                 : "text-emerald-400"
@@ -136,22 +137,22 @@ export function AnalyticsView() {
             {estimation?.overallBiasPercentage > 0 ? "+" : ""}
             {estimation?.overallBiasPercentage || 0}%
           </div>
-          <p className="text-[11px] text-muted-foreground">Average difference from estimate</p>
+          <p className="text-[11px] text-muted-foreground font-display">Variance from estimate</p>
         </div>
       </div>
 
       {/* Evidence-Based Insight Engine */}
       {insights.length > 0 && (
-        <div className="p-5 rounded-2xl bg-primary/5 border border-primary/20 space-y-3">
+        <div className="p-5 sm:p-6 rounded-2xl bg-primary/5 border border-primary/25 space-y-3 shadow-specular-card">
           <div className="text-xs font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
             <Sparkles className="w-4 h-4" />
             Empirical Planning Observations
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-foreground/90">
             {insights.map((insight, idx) => (
-              <div key={idx} className="p-3 rounded-xl bg-card/60 border border-border flex items-start gap-2.5">
+              <div key={idx} className="p-3.5 rounded-xl bg-card/70 border border-border/80 flex items-start gap-2.5">
                 <span className="text-primary font-bold">•</span>
-                <span>{insight}</span>
+                <span className="leading-relaxed">{insight}</span>
               </div>
             ))}
           </div>
@@ -159,58 +160,56 @@ export function AnalyticsView() {
       )}
 
       {/* Estimation Intelligence Table: Planned vs Actual */}
-      <div className="p-6 rounded-2xl bg-card border border-border shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-semibold text-foreground">Estimation Intelligence</h3>
-            <p className="text-xs text-muted-foreground">
-              Analyzes historical tasks to pinpoint where duration estimates diverge.
-            </p>
-          </div>
+      <div className="p-6 rounded-2xl bg-card border border-border/80 shadow-specular-card space-y-4">
+        <div>
+          <h3 className="text-base font-bold text-foreground">Estimation Intelligence</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Analyzes completed tasks to pinpoint duration divergence across task sizes.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
           {/* Under 30 min */}
-          <div className="p-4 rounded-xl bg-secondary/40 border border-border space-y-2">
+          <div className="p-4 rounded-xl bg-secondary/40 border border-border/80 space-y-2">
             <span className="font-semibold text-foreground">Short Tasks (&lt; 30 min)</span>
             <div className="flex items-baseline justify-between pt-1">
               <span className="text-muted-foreground">Variance:</span>
-              <span className="font-mono font-bold text-foreground">
+              <span className="font-display font-bold tabular-nums text-foreground">
                 {estimation?.under30Min?.averageDiffPercentage > 0 ? "+" : ""}
                 {estimation?.under30Min?.averageDiffPercentage || 0}%
               </span>
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground font-display tabular-nums">
               Sample: {estimation?.under30Min?.count || 0} completed
             </p>
           </div>
 
           {/* 30 - 60 min */}
-          <div className="p-4 rounded-xl bg-secondary/40 border border-border space-y-2">
+          <div className="p-4 rounded-xl bg-secondary/40 border border-border/80 space-y-2">
             <span className="font-semibold text-foreground">Medium Tasks (30–60 min)</span>
             <div className="flex items-baseline justify-between pt-1">
               <span className="text-muted-foreground">Variance:</span>
-              <span className="font-mono font-bold text-foreground">
+              <span className="font-display font-bold tabular-nums text-foreground">
                 {estimation?.between30And60Min?.averageDiffPercentage > 0 ? "+" : ""}
                 {estimation?.between30And60Min?.averageDiffPercentage || 0}%
               </span>
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground font-display tabular-nums">
               Sample: {estimation?.between30And60Min?.count || 0} completed
             </p>
           </div>
 
           {/* Over 60 min */}
-          <div className="p-4 rounded-xl bg-secondary/40 border border-border space-y-2">
+          <div className="p-4 rounded-xl bg-secondary/40 border border-border/80 space-y-2">
             <span className="font-semibold text-foreground">Deep Work Tasks (&gt; 60 min)</span>
             <div className="flex items-baseline justify-between pt-1">
               <span className="text-muted-foreground">Variance:</span>
-              <span className="font-mono font-bold text-foreground">
+              <span className="font-display font-bold tabular-nums text-foreground">
                 {estimation?.over60Min?.averageDiffPercentage > 0 ? "+" : ""}
                 {estimation?.over60Min?.averageDiffPercentage || 0}%
               </span>
             </div>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground font-display tabular-nums">
               Sample: {estimation?.over60Min?.count || 0} completed
             </p>
           </div>
@@ -218,8 +217,8 @@ export function AnalyticsView() {
       </div>
 
       {/* Work by Category */}
-      <div className="p-6 rounded-2xl bg-card border border-border shadow-sm space-y-4">
-        <h3 className="text-base font-semibold text-foreground">Workload Distribution by Domain</h3>
+      <div className="spider-card p-6 space-y-4">
+        <h3 className="text-base font-display font-bold text-foreground">Workload Distribution by Domain</h3>
 
         <div className="space-y-3">
           {Object.entries(categories).map(([catName, stats]) => {
@@ -227,14 +226,14 @@ export function AnalyticsView() {
             return (
               <div key={catName} className="space-y-1.5 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-foreground">{catName}</span>
-                  <span className="text-muted-foreground">
+                  <span className="font-semibold text-foreground">{catName}</span>
+                  <span className="text-muted-foreground font-display tabular-nums text-[11px]">
                     {stats.completed} / {stats.total} completed ({pct}%)
                   </span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
                   <div
-                    className="h-full bg-primary transition-all duration-300"
+                    className="h-full bg-primary transition-all duration-300 shadow-glow-crimson-sm"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -246,11 +245,13 @@ export function AnalyticsView() {
 
       {/* Forgotten Work Detector */}
       {forgotten && forgotten.count > 0 && (
-        <div className="p-6 rounded-2xl bg-card border border-amber-500/40 shadow-sm space-y-4 animate-fadeIn">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-400" />
+        <div className="p-6 rounded-2xl bg-card border border-amber-500/40 shadow-specular-card space-y-4 animate-fadeIn">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
             <div>
-              <h3 className="text-base font-semibold text-foreground">
+              <h3 className="text-base font-bold text-foreground">
                 Forgotten Work Detector ({forgotten.count} items)
               </h3>
               <p className="text-xs text-muted-foreground">
@@ -263,27 +264,27 @@ export function AnalyticsView() {
             {forgotten.tasks.map((task: any) => (
               <div
                 key={task._id}
-                className="p-3 rounded-xl bg-secondary/40 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                className="p-3.5 rounded-xl bg-secondary/40 border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
               >
                 <div>
-                  <span className="px-1.5 py-0.2 rounded bg-card text-[10px] text-muted-foreground mr-2">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-card text-muted-foreground border border-border/60 mr-2">
                     {task.category}
                   </span>
-                  <span className="font-medium text-foreground">{task.title}</span>
+                  <span className="font-semibold text-foreground">{task.title}</span>
                 </div>
 
                 <div className="flex items-center gap-2 self-end sm:self-center">
                   <button
                     type="button"
                     onClick={() => handleDismissForgottenTask(task._id, "reschedule")}
-                    className="px-2.5 py-1 rounded bg-secondary hover:bg-secondary/80 border border-border text-foreground text-[11px] font-medium flex items-center gap-1 transition-colors"
+                    className="px-3 py-1.5 rounded-xl bg-secondary hover:bg-secondary/80 border border-border/80 text-foreground text-[11px] font-semibold flex items-center gap-1 transition-colors"
                   >
                     <RotateCcw className="w-3 h-3" /> Reschedule
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDismissForgottenTask(task._id, "delete")}
-                    className="p-1 text-muted-foreground hover:text-red-400 transition-colors"
+                    className="p-2 text-muted-foreground hover:text-red-400 rounded-xl hover:bg-secondary transition-colors"
                     title="Delete item"
                   >
                     <Trash2 className="w-3.5 h-3.5" />

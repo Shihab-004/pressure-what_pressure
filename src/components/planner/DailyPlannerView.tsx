@@ -19,6 +19,7 @@ import { useApi } from "@/lib/api/useApi";
 import { toast } from "sonner";
 import { formatMinutes, formatDateLabel } from "@/lib/utils";
 import { addDays, subDays, format } from "date-fns";
+import { SpiderLogo } from "@/components/icons/SpiderLogo";
 
 interface DailyPlannerViewProps {
   onStartFocus: (task: ITask) => void;
@@ -91,8 +92,9 @@ export function DailyPlannerView({
       {/* Date Bar & Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
-            Daily Execution Planner
+          <div className="text-xs uppercase tracking-widest text-muted-foreground font-semibold flex items-center gap-1.5">
+            <SpiderLogo className="w-4 h-4 text-primary" />
+            Daily Execution Timeline
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             {format(new Date(`${selectedDate}T00:00:00`), "EEEE, MMMM d, yyyy")}
@@ -103,21 +105,23 @@ export function DailyPlannerView({
           <button
             type="button"
             onClick={() => setSelectedDate(format(subDays(new Date(selectedDate), 1), "yyyy-MM-dd"))}
-            className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors"
+            className="p-2 rounded-xl bg-secondary/70 hover:bg-secondary text-foreground transition-colors border border-border/70"
+            title="Previous Day"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
           <button
             type="button"
             onClick={() => setSelectedDate(format(new Date(), "yyyy-MM-dd"))}
-            className="px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground text-xs font-medium transition-colors"
+            className="px-3.5 py-1.5 rounded-xl bg-secondary/80 hover:bg-secondary text-foreground text-xs font-semibold transition-colors border border-border/70"
           >
             Today
           </button>
           <button
             type="button"
             onClick={() => setSelectedDate(format(addDays(new Date(selectedDate), 1), "yyyy-MM-dd"))}
-            className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors"
+            className="p-2 rounded-xl bg-secondary/70 hover:bg-secondary text-foreground transition-colors border border-border/70"
+            title="Next Day"
           >
             <ArrowRight className="w-4 h-4" />
           </button>
@@ -125,16 +129,16 @@ export function DailyPlannerView({
       </div>
 
       {/* Workload Capacity & Auto-Balance Banner */}
-      <div className="p-5 rounded-2xl bg-card border border-border/80 shadow-sm space-y-3">
+      <div className="spider-card p-5 space-y-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-primary" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Day Capacity Analysis
+            <span className="text-[11px] font-display font-bold uppercase tracking-wider text-muted-foreground">
+              Capacity Breakdown
             </span>
           </div>
           <span
-            className={`font-mono text-xs font-bold ${
+            className={`font-display tabular-nums text-xs font-bold ${
               isOverloaded ? "text-red-400" : "text-emerald-400"
             }`}
           >
@@ -142,11 +146,13 @@ export function DailyPlannerView({
           </span>
         </div>
 
-        {/* Bar */}
+        {/* Progress bar */}
         <div className="w-full h-2 rounded-full bg-secondary overflow-hidden">
           <div
             className={`h-full transition-all duration-300 ${
-              isOverloaded ? "bg-red-500" : "bg-primary"
+              isOverloaded
+                ? "bg-gradient-to-r from-red-500 to-rose-600 shadow-glow-crimson-sm"
+                : "bg-gradient-to-r from-primary to-rose-500"
             }`}
             style={{ width: `${Math.min(100, Math.round((plannedMin / availMin) * 100))}%` }}
           />
@@ -154,16 +160,15 @@ export function DailyPlannerView({
 
         {/* Overload Alert & 1-Click Auto-Balance Action */}
         {isOverloaded && (
-          <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
+          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
             <div className="flex items-start gap-2.5">
               <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
               <div className="text-xs">
-                <span className="font-semibold text-red-300">
-                  Your current plan is unrealistic.
+                <span className="font-display font-bold text-red-300">
+                  Day exceeds realistic capacity.
                 </span>{" "}
-                <span className="text-red-300/80">
-                  You are over budget by {formatMinutes(plannedMin - availMin)}. Flexible work can be
-                  redistributed.
+                <span className="text-red-300/80 font-display tabular-nums">
+                  Over budget by {formatMinutes(plannedMin - availMin)}. Flexible tasks can be automatically shifted.
                 </span>
               </div>
             </div>
@@ -172,10 +177,10 @@ export function DailyPlannerView({
               type="button"
               disabled={balancing}
               onClick={handleAutoBalance}
-              className="px-3.5 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors whitespace-nowrap self-end sm:self-center"
+              className="spider-btn-primary spider-btn-sm whitespace-nowrap self-end sm:self-center"
             >
               <Sliders className="w-3.5 h-3.5" />
-              AUTO-BALANCE MY DAY
+              <span>AUTO-BALANCE DAY</span>
             </button>
           </div>
         )}
@@ -184,29 +189,29 @@ export function DailyPlannerView({
       {/* Timeline Schedule */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Scheduled Timeline ({tasks.length} tasks)
           </h2>
           <button
             type="button"
             onClick={onOpenNewTask}
-            className="text-xs text-primary hover:underline flex items-center gap-1"
+            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             Add to plan
           </button>
         </div>
 
         {loading ? (
-          <div className="py-12 text-center text-xs text-muted-foreground">
-            Loading schedule...
+          <div className="py-14 text-center text-xs text-muted-foreground">
+            Synchronizing schedule...
           </div>
         ) : tasks.length === 0 ? (
-          <div className="p-8 rounded-2xl bg-card border border-border text-center space-y-2">
-            <CheckCircle2 className="w-8 h-8 text-muted-foreground mx-auto" />
-            <p className="text-sm font-medium text-foreground">No tasks scheduled for this day.</p>
+          <div className="p-10 rounded-2xl bg-card border border-border text-center space-y-2 shadow-specular-card">
+            <CheckCircle2 className="w-9 h-9 text-muted-foreground/60 mx-auto" />
+            <p className="text-sm font-semibold text-foreground">No tasks scheduled for this day.</p>
             <p className="text-xs text-muted-foreground">
-              Add tasks from Inbox or use the Weekly Planner to assign items.
+              Add tasks from your Inbox or use the Weekly Planner to allocate items.
             </p>
           </div>
         ) : (
@@ -218,18 +223,18 @@ export function DailyPlannerView({
                   key={task._id}
                   className={`p-4 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                     isCompleted
-                      ? "bg-card/40 border-border/40 opacity-70"
-                      : "bg-card border-border/80 hover:border-primary/50 shadow-sm"
+                      ? "bg-card/40 border-border/40 opacity-60"
+                      : "bg-card border-border/80 hover:border-primary/40 shadow-specular-card"
                   }`}
                 >
                   <div className="flex items-start gap-3 min-w-0">
                     <button
                       type="button"
                       onClick={() => handleToggleComplete(task)}
-                      className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+                      className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-lg border flex items-center justify-center transition-colors ${
                         isCompleted
-                          ? "bg-emerald-600 border-emerald-600 text-white"
-                          : "border-border hover:border-primary text-transparent"
+                          ? "bg-emerald-500 border-emerald-500 text-white animate-web-snap"
+                          : "border-border/80 hover:border-primary text-transparent bg-secondary/40"
                       }`}
                     >
                       <CheckCircle className="w-3.5 h-3.5 fill-current" />
@@ -237,15 +242,15 @@ export function DailyPlannerView({
 
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs text-primary font-semibold">
+                        <span className="font-display tabular-nums text-xs text-primary font-bold">
                           {task.timeSlot}
                         </span>
-                        <span className="px-1.5 py-0.2 rounded text-[10px] bg-secondary text-muted-foreground">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-secondary text-muted-foreground border border-border/70">
                           {task.category}
                         </span>
                       </div>
                       <h3
-                        className={`text-sm font-medium leading-snug ${
+                        className={`text-sm font-semibold leading-snug ${
                           isCompleted ? "line-through text-muted-foreground" : "text-foreground"
                         }`}
                       >
@@ -254,12 +259,12 @@ export function DailyPlannerView({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 self-end sm:self-center">
+                  <div className="flex items-center gap-2 self-end sm:self-center flex-shrink-0">
                     {!isCompleted && (
                       <button
                         type="button"
                         onClick={() => onStartFocus(task)}
-                        className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium flex items-center gap-1.5 transition-all shadow-sm"
+                        className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-primary to-rose-600 hover:from-primary/90 hover:to-rose-500 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-glow-crimson-sm border border-red-400/30 active:scale-95"
                       >
                         <Play className="w-3 h-3 fill-current" />
                         Focus
@@ -268,7 +273,7 @@ export function DailyPlannerView({
                     <button
                       type="button"
                       onClick={() => onReschedule(task)}
-                      className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                      className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                       title="Reschedule"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />

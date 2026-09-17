@@ -16,6 +16,7 @@ import { useApi } from "@/lib/api/useApi";
 import { toast } from "sonner";
 import { formatMinutes } from "@/lib/utils";
 import { addWeeks, subWeeks, format } from "date-fns";
+import { SpiderLogo } from "@/components/icons/SpiderLogo";
 
 interface WeeklyPlannerViewProps {
   onStartFocus: (task: ITask) => void;
@@ -71,7 +72,8 @@ export function WeeklyPlannerView({ onStartFocus, onOpenNewTask }: WeeklyPlanner
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+          <div className="text-xs uppercase tracking-widest text-muted-foreground font-semibold flex items-center gap-1.5">
+            <SpiderLogo className="w-4 h-4 text-primary" />
             Weekly Architecture
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
@@ -80,22 +82,24 @@ export function WeeklyPlannerView({ onStartFocus, onOpenNewTask }: WeeklyPlanner
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 bg-secondary/40 border border-border/80 p-1 rounded-xl">
             <button
               onClick={() => setCurrentWeekBase((prev) => subWeeks(prev, 1))}
-              className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors"
+              className="p-1.5 rounded-lg hover:bg-secondary text-foreground transition-colors"
+              title="Previous Week"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => setCurrentWeekBase(new Date())}
-              className="px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground text-xs font-medium"
+              className="px-3 py-1 rounded-lg hover:bg-secondary text-foreground text-xs font-semibold"
             >
-              Current Week
+              Current
             </button>
             <button
               onClick={() => setCurrentWeekBase((prev) => addWeeks(prev, 1))}
-              className="p-2 rounded-lg bg-secondary hover:bg-secondary/80 text-foreground transition-colors"
+              className="p-1.5 rounded-lg hover:bg-secondary text-foreground transition-colors"
+              title="Next Week"
             >
               <ArrowRight className="w-4 h-4" />
             </button>
@@ -105,7 +109,7 @@ export function WeeklyPlannerView({ onStartFocus, onOpenNewTask }: WeeklyPlanner
             type="button"
             disabled={building}
             onClick={handleBuildMyWeek}
-            className="px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all whitespace-nowrap"
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-primary to-rose-600 hover:from-primary/90 hover:to-rose-500 disabled:opacity-40 text-white text-xs font-bold flex items-center gap-1.5 shadow-glow-crimson-sm border border-red-400/30 transition-all whitespace-nowrap active:scale-95"
           >
             {building ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -119,7 +123,7 @@ export function WeeklyPlannerView({ onStartFocus, onOpenNewTask }: WeeklyPlanner
 
       {/* 7-Day Grid */}
       {loading ? (
-        <div className="py-20 text-center text-xs text-muted-foreground">Loading week plan...</div>
+        <div className="py-24 text-center text-xs text-muted-foreground">Synchronizing weekly architecture...</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3">
           {dayKeys.map((dateStr) => {
@@ -137,27 +141,27 @@ export function WeeklyPlannerView({ onStartFocus, onOpenNewTask }: WeeklyPlanner
             return (
               <div
                 key={dateStr}
-                className={`flex flex-col rounded-xl border p-3 min-h-[320px] transition-colors ${
+                className={`flex flex-col rounded-xl border p-3 min-h-[340px] transition-all ${
                   isToday
-                    ? "bg-card border-primary/50 shadow-sm"
-                    : "bg-card/50 border-border/70"
+                    ? "spider-card border-primary/50 shadow-glow-crimson-sm"
+                    : "spider-card hover:border-border"
                 }`}
               >
                 {/* Column Header */}
-                <div className="border-b border-border pb-2 mb-2 flex items-center justify-between">
+                <div className="border-b border-border/80 pb-2 mb-2 flex items-center justify-between">
                   <div>
                     <div
-                      className={`text-xs font-bold uppercase tracking-wider ${
+                      className={`text-xs font-display font-bold uppercase tracking-wider ${
                         isToday ? "text-primary" : "text-foreground"
                       }`}
                     >
                       {dayName}
                     </div>
-                    <div className="text-[11px] text-muted-foreground">{dayNum}</div>
+                    <div className="text-[11px] text-muted-foreground font-display tabular-nums">{dayNum}</div>
                   </div>
 
                   <div className="text-right">
-                    <span className="font-mono text-[10px] text-muted-foreground font-medium">
+                    <span className="font-display tabular-nums text-[10px] text-muted-foreground font-semibold px-1.5 py-0.5 rounded bg-secondary">
                       {formatMinutes(totalMin)}
                     </span>
                   </div>
@@ -166,7 +170,7 @@ export function WeeklyPlannerView({ onStartFocus, onOpenNewTask }: WeeklyPlanner
                 {/* Task Cards for Day */}
                 <div className="flex-1 space-y-2 overflow-y-auto max-h-[420px] pr-0.5">
                   {dayTasks.length === 0 ? (
-                    <div className="h-24 flex items-center justify-center text-[11px] text-muted-foreground/60 border border-dashed border-border/50 rounded-lg">
+                    <div className="h-28 flex items-center justify-center text-[11px] text-muted-foreground/60 border border-dashed border-border/60 rounded-xl font-display">
                       Clear
                     </div>
                   ) : (
@@ -175,21 +179,21 @@ export function WeeklyPlannerView({ onStartFocus, onOpenNewTask }: WeeklyPlanner
                       return (
                         <div
                           key={task._id}
-                          className={`p-2 rounded-lg border text-xs space-y-1 transition-all ${
+                          className={`p-2.5 rounded-lg border text-xs space-y-1.5 transition-all ${
                             isCompleted
                               ? "bg-secondary/30 border-border/40 opacity-60 line-through text-muted-foreground"
-                              : "bg-secondary/70 border-border/80 text-foreground hover:border-primary/40 shadow-xs"
+                              : "bg-secondary/60 border-border/80 text-foreground hover:border-primary/40 shadow-2xs"
                           }`}
                         >
                           <div className="flex items-center justify-between gap-1">
-                            <span className="text-[9px] font-semibold uppercase px-1 py-0.2 rounded bg-card text-muted-foreground">
+                            <span className="text-[9px] font-display font-bold uppercase px-1.5 py-0.5 rounded bg-card text-muted-foreground border border-border/60">
                               {task.category}
                             </span>
-                            <span className="text-[10px] text-muted-foreground font-mono">
+                            <span className="text-[10px] text-muted-foreground font-display tabular-nums">
                               {task.estimatedMinutes || 45}m
                             </span>
                           </div>
-                          <p className="font-medium line-clamp-2 leading-tight">{task.title}</p>
+                          <p className="font-semibold line-clamp-2 leading-snug">{task.title}</p>
                         </div>
                       );
                     })

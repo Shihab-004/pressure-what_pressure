@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+  <rect x="32" y="32" width="448" height="448" rx="100" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2" />
+  <!-- Center Command Compass Symbol -->
+  <circle cx="256" cy="256" r="140" fill="none" stroke="rgba(56,189,248,0.25)" stroke-width="4" stroke-dasharray="8 8" />
+  <polygon points="256,116 296,256 256,396 216,256" fill="url(#accentGrad)" />
+  <circle cx="256" cy="256" r="28" fill="#020617" stroke="#38bdf8" stroke-width="6" />
+  <circle cx="256" cy="256" r="10" fill="#38bdf8" />
+</svg>

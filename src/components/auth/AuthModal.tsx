@@ -37,7 +37,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   const avatarUrl = user?.avatar || firebaseUser?.photoURL;
   const displayName = user?.name || firebaseUser?.displayName || "Operator";
-  const displayEmail = isDemoUser ? "Local Session" : user?.email || firebaseUser?.email || "Signed In";
+  const displayEmail = user?.email || firebaseUser?.email || "Signed In";
 
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
@@ -80,14 +80,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
   }
 
-  async function handleQuickDemo(username: string) {
-    setLoading(true);
-    await loginDemo(username);
-    setLoading(false);
-    toast.success(`Switched to demo user: ${username}`);
-    setIsSwitching(false);
-    onClose();
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
@@ -142,7 +134,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <div className="pt-1.5">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[11px] font-display font-bold text-emerald-400">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  {isDemoUser ? "Active Demo Session" : "Verified Google Account"}
+                  Verified Account
                 </span>
               </div>
             </div>
@@ -329,29 +321,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   </button>
                 </p>
               )}
-            </div>
-
-            {/* Fast Local Demo Switcher */}
-            <div className="pt-2 border-t border-border/80 space-y-2 text-center">
-              <span className="text-[10px] text-muted-foreground font-display font-bold uppercase tracking-wider">
-                Quick Session:
-              </span>
-              <div className="flex items-center justify-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo("engineer")}
-                  className="spider-btn-secondary spider-btn-sm text-[11px]"
-                >
-                  Demo Engineer
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemo("student")}
-                  className="spider-btn-secondary spider-btn-sm text-[11px]"
-                >
-                  Demo Student
-                </button>
-              </div>
             </div>
           </>
         )}

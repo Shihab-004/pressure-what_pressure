@@ -58,26 +58,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Token provider for authenticated fetch requests
   async function getIdToken(): Promise<string | null> {
-    if (isDemoUser) {
-      const stored = localStorage.getItem("personal_os_demo_token");
-      return stored || "demo-token-engineer";
-    }
     if (firebaseUser) {
       return await firebaseUser.getIdToken();
     }
-    const storedDemo = typeof window !== "undefined" ? localStorage.getItem("personal_os_demo_token") : null;
-    if (storedDemo) return storedDemo;
+    if (isDemoUser) {
+      const stored = typeof window !== "undefined" ? localStorage.getItem("personal_os_demo_token") : null;
+      return stored || null;
+    }
     return null;
   }
 
   useEffect(() => {
+    // Purge any stale demo tokens from localStorage so they never hijack real authentication
+    try {
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("personal_os_demo_token");
+        if (stored && process.env.NEXT_PUBLIC_ENABLE_DEMO_MODE !== "true") {
+          localStorage.removeItem("personal_os_demo_token");
+        }
+      }
+    } catch (_) {}
+
     // 1. Handle redirect result if user was redirected from Google Sign-In on mobile
     getRedirectResult(auth)
       .then(async (result) => {
         if (result && result.user) {
-          localStorage.removeItem("personal_os_demo_token");
+          try {
+            localStorage.removeItem("personal_os_demo_token");
+          } catch (_) {}
           setIsDemoUser(false);
           setFirebaseUser(result.user);
+          setUser({
+            _id: result.user.uid,
+            firebaseUid: result.user.uid,
+            email: result.user.email || "",
+            name: result.user.displayName || result.user.email?.split("@")[0] || "User",
+            avatar: result.user.photoURL || undefined,
+            preferences: {
+              workDays: [0, 1, 2, 3, 4],
+              dailyWorkHours: 5.5,
+              theme: "dark",
+            },
+          } as any);
           const token = await result.user.getIdToken();
           await fetchUserProfile(token);
         }
@@ -86,31 +108,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn("Redirect sign-in error:", err);
       });
 
-    // 2. Check if explicit demo user session was saved in local storage
-    const savedDemoToken = localStorage.getItem("personal_os_demo_token");
-    if (savedDemoToken) {
-      setIsDemoUser(true);
-      fetchUserProfile(savedDemoToken).finally(() => setLoading(false));
-      return;
-    }
-
-    // 3. Subscribe to persistent Firebase Auth state across browser restarts
+    // 2. Subscribe to persistent Firebase Auth state across browser restarts
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser);
       if (fbUser) {
         setIsDemoUser(false);
+        try {
+          localStorage.removeItem("personal_os_demo_token");
+        } catch (_) {}
+        // Optimistically set user with real Google photo and name immediately
+        setUser({
+          _id: fbUser.uid,
+          firebaseUid: fbUser.uid,
+          email: fbUser.email || "",
+          name: fbUser.displayName || fbUser.email?.split("@")[0] || "User",
+          avatar: fbUser.photoURL || undefined,
+          preferences: {
+            workDays: [0, 1, 2, 3, 4],
+            dailyWorkHours: 5.5,
+            theme: "dark",
+          },
+        } as any);
         const token = await fbUser.getIdToken();
         await fetchUserProfile(token);
       } else {
-        // Only if demo mode enabled and no user logged in
-        if (process.env.NEXT_PUBLIC_ENABLE_DEMO_MODE === "true" && !user && !savedDemoToken) {
-          setIsDemoUser(true);
-          const demoToken = "demo-token-engineer";
-          localStorage.setItem("personal_os_demo_token", demoToken);
-          await fetchUserProfile(demoToken);
-        } else {
-          setUser(null);
-        }
+        setIsDemoUser(false);
+        setUser(null);
       }
       setLoading(false);
     });
@@ -156,7 +179,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signInWithGoogle() {
     setLoading(true);
     try {
-      localStorage.removeItem("personal_os_demo_token");
+      try {
+        localStorage.removeItem("personal_os_demo_token");
+      } catch (_) {}
       setIsDemoUser(false);
 
       let cred;
@@ -171,28 +196,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await signInWithRedirect(auth, googleProvider);
           return;
         }
-
-        // If local development is running with placeholder API key in demo mode,
-        // provide simulated Google authentication so local dev never hangs
-        if (
-          (popupErr.code === "auth/api-key-not-valid" ||
-            popupErr.code === "auth/invalid-api-key" ||
-            popupErr.code === "auth/unauthorized-domain") &&
-          process.env.NEXT_PUBLIC_ENABLE_DEMO_MODE === "true"
-        ) {
-          console.warn("Using simulated Google sign-in for demo mode:", popupErr.message);
-          const demoGoogleToken = "demo-token-google-user@gmail.com";
-          localStorage.setItem("personal_os_demo_token", demoGoogleToken);
-          setIsDemoUser(true);
-          await fetchUserProfile(demoGoogleToken);
-          return;
-        }
-
         throw popupErr;
       }
 
       if (cred && cred.user) {
         setFirebaseUser(cred.user);
+        setUser({
+          _id: cred.user.uid,
+          firebaseUid: cred.user.uid,
+          email: cred.user.email || "",
+          name: cred.user.displayName || cred.user.email?.split("@")[0] || "User",
+          avatar: cred.user.photoURL || undefined,
+          preferences: {
+            workDays: [0, 1, 2, 3, 4],
+            dailyWorkHours: 5.5,
+            theme: "dark",
+          },
+        } as any);
         const token = await cred.user.getIdToken();
         await fetchUserProfile(token);
       }

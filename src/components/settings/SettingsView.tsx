@@ -102,7 +102,7 @@ export function SettingsView() {
             <span className="text-muted-foreground block mb-1 font-medium">Session Mode</span>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium text-[11px] border border-border/70">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              {isDemoUser ? "Local Offline Workspace" : "Firebase Authenticated"}
+              {user ? "Firebase Google Authenticated" : "Not Signed In"}
             </span>
           </div>
         </div>

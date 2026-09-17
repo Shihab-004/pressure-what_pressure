@@ -229,33 +229,6 @@ export default function LoginPage() {
             </p>
           )}
         </div>
-
-        {/* Demo Fast Access for zero-setup evaluation */}
-        <div className="pt-2 border-t border-border/80 space-y-2 text-center">
-          <span className="text-[10px] text-muted-foreground font-display font-bold uppercase tracking-wider">Quick Session:</span>
-          <div className="flex items-center justify-center gap-2">
-            <button
-              type="button"
-              onClick={async () => {
-                await loginDemo("engineer");
-                router.push("/");
-              }}
-              className="spider-btn-secondary spider-btn-sm text-[11px]"
-            >
-              Demo Engineer
-            </button>
-            <button
-              type="button"
-              onClick={async () => {
-                await loginDemo("student");
-                router.push("/");
-              }}
-              className="spider-btn-secondary spider-btn-sm text-[11px]"
-            >
-              Demo Student
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

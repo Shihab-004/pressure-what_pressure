@@ -16,6 +16,7 @@ import {
   Settings,
   X,
   ChevronRight,
+  LogIn,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { SpiderLogo } from "@/components/icons/SpiderLogo";
@@ -38,7 +39,7 @@ export function MobileNav({
 
   const avatarUrl = user?.avatar || firebaseUser?.photoURL;
   const displayName = user?.name || firebaseUser?.displayName || "Operator";
-  const displayEmail = isDemoUser ? "Local Session" : user?.email || firebaseUser?.email || "Signed In";
+  const displayEmail = user?.email || firebaseUser?.email || "Connected";
 
   // Check if current tab is one of the secondary Hub sections
   const isHubActive = [
@@ -205,43 +206,73 @@ export function MobileNav({
               </button>
             </div>
 
-            {/* Active Account Banner (Shows user's Google/Gmail account clearly on mobile) */}
-            <div
-              onClick={() => {
-                setIsHubOpen(false);
-                onOpenAuth?.();
-              }}
-              className="spider-card p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all active:scale-98"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="relative flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center text-sm font-display font-bold overflow-hidden shadow-glow-crimson-sm">
-                    {avatarUrl ? (
-                      <img
-                        src={avatarUrl}
-                        alt={displayName}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      displayName.charAt(0) || "U"
-                    )}
+            {/* Active Account Banner / Sign In Banner */}
+            {user || firebaseUser ? (
+              <div
+                onClick={() => {
+                  setIsHubOpen(false);
+                  onOpenAuth?.();
+                }}
+                className="spider-card p-3 flex items-center justify-between cursor-pointer hover:border-primary/50 transition-all active:scale-98"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center text-sm font-display font-bold overflow-hidden shadow-glow-crimson-sm">
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt={displayName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        displayName.charAt(0) || "U"
+                      )}
+                    </div>
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-card" />
                   </div>
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-card" />
+                  <div className="min-w-0 text-left">
+                    <p className="text-xs font-display font-bold text-foreground truncate">
+                      {displayName}
+                    </p>
+                    <p className="text-[11px] font-display text-muted-foreground truncate">
+                      {displayEmail}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0 text-left">
-                  <p className="text-xs font-display font-bold text-foreground truncate">
-                    {displayName}
-                  </p>
-                  <p className="text-[11px] font-display text-muted-foreground truncate">
-                    {displayEmail}
-                  </p>
+                <div className="flex items-center gap-1 text-[11px] text-primary font-display font-bold flex-shrink-0">
+                  <span>Account</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-[11px] text-primary font-display font-bold flex-shrink-0">
-                <span>Account</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+            ) : (
+              <div
+                onClick={() => {
+                  setIsHubOpen(false);
+                  onOpenAuth?.();
+                }}
+                className="spider-card p-3 flex items-center justify-between cursor-pointer hover:border-primary/60 transition-all active:scale-98 border-primary/40 shadow-glow-crimson-sm"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center">
+                    <LogIn className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="min-w-0 text-left">
+                    <p className="text-xs font-display font-bold text-foreground">
+                      Sign In to Workspace
+                    </p>
+                    <p className="text-[11px] font-display text-muted-foreground">
+                      Sync with Google Account
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="spider-btn-primary spider-btn-sm text-[11px] py-1.5 px-3"
+                >
+                  Sign In
+                </button>
               </div>
-            </div>
+            )}
 
             {/* Hub Navigation Grid */}
             <div className="grid grid-cols-2 gap-2 pt-1">

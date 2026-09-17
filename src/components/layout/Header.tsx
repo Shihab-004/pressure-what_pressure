@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search, Brain, Zap, ShieldAlert } from "lucide-react";
+import { Search, Brain, Zap, ShieldAlert, LogIn } from "lucide-react";
 import { SpiderLogo } from "@/components/icons/SpiderLogo";
 import { useAuth } from "@/lib/auth/AuthContext";
 
@@ -23,6 +23,7 @@ export function Header({
   const { user, firebaseUser } = useAuth();
   const avatarUrl = user?.avatar || firebaseUser?.photoURL;
   const displayName = user?.name || firebaseUser?.displayName || "Operator";
+  const isAuthenticated = Boolean(user || firebaseUser);
 
   return (
     <header className="h-14 border-b border-border/80 bg-card/75 backdrop-blur-xl px-3 sm:px-6 flex items-center justify-between sticky top-0 z-20 transition-all">
@@ -50,7 +51,7 @@ export function Header({
         </button>
       </div>
 
-      {/* Action Suite & User Profile */}
+      {/* Action Suite & User Profile / Sign In */}
       <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
         {/* Brain Dump Action */}
         <button
@@ -89,27 +90,39 @@ export function Header({
           <span className="hidden lg:inline text-[11px]">Sanctuary</span>
         </button>
 
-        {/* User Account Avatar (Shows Google/Gmail avatar with online status on both mobile and desktop) */}
-        <button
-          type="button"
-          onClick={onOpenAuth}
-          className="relative p-0.5 rounded-full hover:ring-2 hover:ring-primary/60 transition-all active:scale-95 flex-shrink-0 cursor-pointer ml-1"
-          title={user ? `${displayName} (${user.email || firebaseUser?.email})` : "Account & Authentication"}
-          aria-label="Account Settings"
-        >
-          <div className="w-8 h-8 rounded-full bg-primary/20 text-primary border border-primary/50 flex items-center justify-center text-xs font-display font-bold overflow-hidden shadow-glow-crimson-sm">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={displayName}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              displayName.charAt(0) || "U"
-            )}
-          </div>
-          <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-card" />
-        </button>
+        {/* User Authentication: Avatar if logged in, Sign In tag/button if not logged in */}
+        {isAuthenticated ? (
+          <button
+            type="button"
+            onClick={onOpenAuth}
+            className="relative p-0.5 rounded-full hover:ring-2 hover:ring-primary/60 transition-all active:scale-95 flex-shrink-0 cursor-pointer ml-1"
+            title={`${displayName} (${user?.email || firebaseUser?.email || ""})`}
+            aria-label="Account Settings"
+          >
+            <div className="w-8 h-8 rounded-full bg-primary/20 text-primary border border-primary/50 flex items-center justify-center text-xs font-display font-bold overflow-hidden shadow-glow-crimson-sm">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                displayName.charAt(0) || "U"
+              )}
+            </div>
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-card" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onOpenAuth}
+            className="spider-btn-primary spider-btn-sm flex items-center gap-1.5 px-3 py-1.5 ml-1 text-xs cursor-pointer shadow-glow-crimson-sm"
+            title="Sign in with Google"
+          >
+            <LogIn className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Sign In</span>
+          </button>
+        )}
       </div>
     </header>
   );

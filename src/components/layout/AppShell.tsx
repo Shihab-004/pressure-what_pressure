@@ -34,7 +34,7 @@ import { useAuth } from "@/lib/auth/AuthContext";
 import { toast } from "sonner";
 
 export function AppShell() {
-  const { user, loading: authLoading, isDemoUser } = useAuth();
+  const { user, firebaseUser, loading: authLoading } = useAuth();
   const [currentTab, setCurrentTab] = useState<string>("dashboard");
   const [plannerSubTab, setPlannerSubTab] = useState<"daily" | "weekly">("daily");
 
@@ -72,10 +72,10 @@ export function AppShell() {
   }, [currentTab]);
 
   useEffect(() => {
-    if (!authLoading && !user && !isDemoUser) {
+    if (!authLoading && !user && !firebaseUser) {
       setIsAuthOpen(true);
     }
-  }, [authLoading, user, isDemoUser]);
+  }, [authLoading, user, firebaseUser]);
 
   // Global Keyboard Shortcuts (N, B, T, P, F, Ctrl+K)
   useEffect(() => {

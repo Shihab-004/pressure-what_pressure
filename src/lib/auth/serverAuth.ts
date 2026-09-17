@@ -3,20 +3,37 @@ import { connectToDatabase } from "@/lib/db";
 import { User, IUserDocument } from "@/models/User";
 import * as admin from "firebase-admin";
 
-// Initialize Firebase Admin SDK if credentials exist
-if (!admin.apps.length && process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL) {
+function initFirebaseAdmin(): boolean {
+  if (admin.apps.length > 0) return true;
+  if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL) return false;
+
   try {
+    let key = process.env.FIREBASE_PRIVATE_KEY || "";
+    key = key.trim();
+    if (
+      (key.startsWith('"') && key.endsWith('"')) ||
+      (key.startsWith("'") && key.endsWith("'"))
+    ) {
+      key = key.slice(1, -1);
+    }
+    key = key.replace(/\\n/g, "\n");
+
     admin.initializeApp({
       credential: admin.credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+        privateKey: key,
       }),
     });
+    return true;
   } catch (err) {
-    console.warn("Firebase admin initialization failed:", err);
+    console.error("Firebase admin initialization error:", err);
+    return false;
   }
 }
+
+// Initial invocation
+initFirebaseAdmin();
 
 export interface AuthenticatedUser {
   id: string; // MongoDB _id as string
@@ -66,15 +83,21 @@ export async function getAuthenticatedUser(
       email = `${suffix}@gmail.com`;
       name = suffix.charAt(0).toUpperCase() + suffix.slice(1);
     }
-  } else if (token && admin.apps.length > 0) {
-    try {
-      const decoded = await admin.auth().verifyIdToken(token);
-      firebaseUid = decoded.uid;
-      email = decoded.email || "user@example.com";
-      name = decoded.name || decoded.email?.split("@")[0] || "User";
-      avatar = decoded.picture || undefined;
-    } catch (err) {
-      console.error("Token verification failed:", err);
+  } else if (token) {
+    initFirebaseAdmin();
+    if (admin.apps.length > 0) {
+      try {
+        const decoded = await admin.auth().verifyIdToken(token);
+        firebaseUid = decoded.uid;
+        email = decoded.email || "user@example.com";
+        name = decoded.name || decoded.email?.split("@")[0] || "User";
+        avatar = decoded.picture || undefined;
+      } catch (err) {
+        console.error("Token verification failed:", err);
+        return null;
+      }
+    } else {
+      console.error("Firebase Admin could not be initialized");
       return null;
     }
   } else if (isDemoEnabled) {

@@ -13,6 +13,7 @@ import {
   FileCheck,
   Settings,
   Shield,
+  LogIn,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { SpiderLogo } from "@/components/icons/SpiderLogo";
@@ -24,7 +25,11 @@ interface SidebarProps {
 }
 
 export function Sidebar({ currentTab, onSelectTab, onOpenAuth }: SidebarProps) {
-  const { user, isDemoUser } = useAuth();
+  const { user, firebaseUser } = useAuth();
+  const avatarUrl = user?.avatar || firebaseUser?.photoURL;
+  const displayName = user?.name || firebaseUser?.displayName || "Operator";
+  const displayEmail = user?.email || firebaseUser?.email || "Connected";
+  const isAuthenticated = Boolean(user || firebaseUser);
 
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -88,34 +93,59 @@ export function Sidebar({ currentTab, onSelectTab, onOpenAuth }: SidebarProps) {
         </nav>
       </div>
 
-      {/* Footer User Profile Card */}
+      {/* Footer User Profile / Sign In Card */}
       <div className="p-3 border-t border-border/80">
-        <div
-          onClick={onOpenAuth}
-          className="spider-card flex items-center justify-between p-2.5 cursor-pointer group"
-        >
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="relative flex-shrink-0">
-              <div className="w-8 h-8 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center text-xs font-display font-bold overflow-hidden shadow-xs">
-                {user?.avatar ? (
-                  <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                ) : (
-                  user?.name?.charAt(0) || "U"
-                )}
+        {isAuthenticated ? (
+          <div
+            onClick={onOpenAuth}
+            className="spider-card flex items-center justify-between p-2.5 cursor-pointer group"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="relative flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center text-xs font-display font-bold overflow-hidden shadow-xs">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                  ) : (
+                    displayName.charAt(0) || "U"
+                  )}
+                </div>
+                <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-card" />
               </div>
-              <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-card" />
+              <div className="min-w-0 text-left">
+                <p className="text-xs font-display font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                  {displayName}
+                </p>
+                <p className="text-[10px] font-display text-muted-foreground truncate">
+                  {displayEmail}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0 text-left">
-              <p className="text-xs font-display font-bold text-foreground truncate group-hover:text-primary transition-colors">
-                {user?.name || "Operator"}
-              </p>
-              <p className="text-[10px] font-display text-muted-foreground truncate">
-                {isDemoUser ? "Local Session" : user?.email}
-              </p>
-            </div>
+            <Shield className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary flex-shrink-0 transition-colors" />
           </div>
-          <Shield className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary flex-shrink-0 transition-colors" />
-        </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onOpenAuth}
+            className="spider-card w-full flex items-center justify-between p-2.5 cursor-pointer group hover:border-primary/60 transition-all border-primary/30 shadow-glow-crimson-sm text-left"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center text-xs font-display font-bold">
+                <LogIn className="w-4 h-4 text-primary" />
+              </div>
+              <div className="min-w-0 text-left">
+                <p className="text-xs font-display font-bold text-foreground group-hover:text-primary transition-colors">
+                  Sign In
+                </p>
+                <p className="text-[10px] font-display text-muted-foreground truncate">
+                  Sync with Google
+                </p>
+              </div>
+            </div>
+            <span className="text-[10px] font-display font-bold text-primary uppercase tracking-wider">
+              Enter →
+            </span>
+          </button>
+        )}
       </div>
     </aside>
   );

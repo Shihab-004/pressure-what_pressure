@@ -21,6 +21,7 @@ interface AuthContextType {
   user: IUser | null;
   firebaseUser: FirebaseUser | null;
   loading: boolean;
+  authReady: boolean;
   isDemoUser: boolean;
   login: (email: string, pass: string) => Promise<void>;
   register: (email: string, pass: string, name: string) => Promise<void>;
@@ -88,12 +89,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Track auth readiness across startup
+  const [authReady, setAuthReady] = useState(false);
+
   // Token provider for authenticated fetch requests
   async function getIdToken(): Promise<string | null> {
-    if (firebaseUser) {
-      return await firebaseUser.getIdToken();
+    // If still initializing auth on first mount, wait briefly for Firebase or Demo resolution
+    if (loading && typeof window !== "undefined") {
+      await new Promise<void>((resolve) => {
+        const check = () => {
+          if (!loading || auth.currentUser || localStorage.getItem("personal_os_demo_token")) {
+            resolve();
+          } else {
+            setTimeout(check, 50);
+          }
+        };
+        check();
+        setTimeout(resolve, 3000); // 3s safety timeout
+      });
     }
-    if (isDemoUser) {
+
+    if (firebaseUser || auth.currentUser) {
+      const activeUser = firebaseUser || auth.currentUser;
+      return await activeUser!.getIdToken();
+    }
+    if (isDemoUser || (typeof window !== "undefined" && localStorage.getItem("personal_os_demo_token"))) {
       const stored = typeof window !== "undefined" ? localStorage.getItem("personal_os_demo_token") : null;
       return stored || null;
     }
@@ -163,13 +183,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           },
         } as any);
         setLoading(false);
+        setAuthReady(true);
         fbUser.getIdToken().then((token) => {
           if (token) fetchUserProfile(token);
         }).catch((err) => console.warn("Failed to get token:", err));
       } else {
-        setIsDemoUser(false);
-        setUser(null);
+        const demoToken = typeof window !== "undefined" ? localStorage.getItem("personal_os_demo_token") : null;
+        if (demoToken) {
+          setIsDemoUser(true);
+          fetchUserProfile(demoToken);
+        } else {
+          setIsDemoUser(false);
+          setUser(null);
+        }
         setLoading(false);
+        setAuthReady(true);
       }
     });
 
@@ -300,6 +328,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         firebaseUser,
         loading,
+        authReady,
         isDemoUser,
         login,
         register,

@@ -202,3 +202,18 @@ export interface ITaskRecommendation {
   score: number;
   alternativeTasks: ITask[];
 }
+
+export type IdeaStage = "spark" | "exploring" | "validated";
+
+export interface IIdea {
+  _id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  category: string;
+  stage: IdeaStage;
+  tags?: string[];
+  isPinned?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

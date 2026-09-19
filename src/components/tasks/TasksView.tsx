@@ -9,6 +9,8 @@ import { TaskCard } from "./TaskCard";
 import { isTaskBlocked } from "@/lib/engine/recommendationEngine";
 import { SpiderLogo } from "@/components/icons/SpiderLogo";
 import { taskSync } from "@/lib/events/taskSync";
+import { ArrowUpDown } from "lucide-react";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { TaskCardSkeleton } from "@/components/ui/Skeleton";
 
 interface TasksViewProps {
@@ -24,21 +26,25 @@ export function TasksView({
   onOpenNewTask,
   onEditTask,
 }: TasksViewProps) {
+  const { user, loading: authLoading } = useAuth();
   const [tasks, setTasks] = useState<ITask[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"active" | "today" | "inbox" | "overdue" | "completed">("active");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"deadline" | "priority" | "created">("deadline");
 
   const { apiFetch } = useApi();
 
   useEffect(() => {
-    loadTasks();
+    if (!authLoading) {
+      loadTasks();
+    }
     const unsubscribe = taskSync.subscribe(() => {
       loadTasks(true);
     });
     return unsubscribe;
-  }, []);
+  }, [authLoading, user]);
 
   async function loadTasks(silent = false) {
     if (!silent) setLoading(true);
@@ -130,6 +136,38 @@ export function TasksView({
     return true;
   });
 
+  // Sort tasks
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
+    if (sortBy === "deadline") {
+      const nowMs = Date.now();
+      const aDone = a.status === "completed" || a.status === "cancelled";
+      const bDone = b.status === "completed" || b.status === "cancelled";
+      if (aDone !== bDone) return aDone ? 1 : -1;
+
+      const aDeadline = a.deadline ? new Date(a.deadline).getTime() : null;
+      const bDeadline = b.deadline ? new Date(b.deadline).getTime() : null;
+
+      const aOverdue = aDeadline !== null && aDeadline < nowMs;
+      const bOverdue = bDeadline !== null && bDeadline < nowMs;
+
+      if (aOverdue !== bOverdue) return aOverdue ? -1 : 1;
+      if (aOverdue && bOverdue) return (aDeadline || 0) - (bDeadline || 0);
+
+      if (aDeadline !== null && bDeadline !== null) return aDeadline - bDeadline;
+      if (aDeadline !== null && bDeadline === null) return -1;
+      if (aDeadline === null && bDeadline !== null) return 1;
+
+      return (b.dynamicScore || 0) - (a.dynamicScore || 0);
+    }
+    if (sortBy === "priority") {
+      const pOrder: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
+      const pDiff = (pOrder[b.priority] || 2) - (pOrder[a.priority] || 2);
+      if (pDiff !== 0) return pDiff;
+      return (b.dynamicScore || 0) - (a.dynamicScore || 0);
+    }
+    return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+  });
+
   const categories = ["All", "University", "Rover", "Learning", "Career", "Business", "Personal"];
 
   return (
@@ -182,16 +220,31 @@ export function TasksView({
             ))}
           </div>
 
-          {/* Search box */}
-          <div className="relative w-full md:w-64">
-            <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-2.5" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search registry..."
-              className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 border border-border/80 rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/60 font-sans"
-            />
+          {/* Search box & Sort Selector */}
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <div className="relative flex-1 md:w-64">
+              <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-2.5" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search registry..."
+                className="w-full pl-9 pr-3 py-1.5 bg-secondary/50 border border-border/80 rounded-xl text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/60 font-sans"
+              />
+            </div>
+
+            <div className="relative flex items-center">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="h-8 px-2.5 py-1 text-xs bg-secondary/60 border border-border/80 rounded-xl text-foreground font-display font-medium focus:outline-none focus:ring-1 focus:ring-primary/60 cursor-pointer"
+                title="Sort Tasks"
+              >
+                <option value="deadline">⏳ Near Deadline</option>
+                <option value="priority">🔥 High Priority</option>
+                <option value="created">✨ Newest First</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -220,7 +273,7 @@ export function TasksView({
             <TaskCardSkeleton key={idx} />
           ))}
         </div>
-      ) : filteredTasks.length === 0 ? (
+      ) : sortedTasks.length === 0 ? (
         <div className="spider-card p-10 text-center space-y-2.5">
           <CheckSquare className="w-10 h-10 text-muted-foreground/50 mx-auto" />
           <p className="text-sm font-display font-bold text-foreground">No tasks match criteria</p>
@@ -230,7 +283,7 @@ export function TasksView({
         </div>
       ) : (
         <div className="space-y-2.5">
-          {filteredTasks.map((task) => {
+          {sortedTasks.map((task) => {
             const blocked = isTaskBlocked(task, tasks);
             return (
               <TaskCard

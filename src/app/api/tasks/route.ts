@@ -80,6 +80,41 @@ export async function GET(req: NextRequest) {
       };
     });
 
+    // Sort tasks: Overdue -> Imminent deadlines -> Priority weight -> Completed last
+    const nowMs = Date.now();
+    const priorityWeight: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
+
+    tasksWithScores.sort((a: any, b: any) => {
+      const aDone = a.status === "completed" || a.status === "cancelled";
+      const bDone = b.status === "completed" || b.status === "cancelled";
+      if (aDone !== bDone) return aDone ? 1 : -1;
+
+      if (aDone && bDone) {
+        return new Date(b.completedAt || b.updatedAt || 0).getTime() - new Date(a.completedAt || a.updatedAt || 0).getTime();
+      }
+
+      const aDeadline = a.deadline ? new Date(a.deadline).getTime() : null;
+      const bDeadline = b.deadline ? new Date(b.deadline).getTime() : null;
+
+      const aOverdue = aDeadline !== null && aDeadline < nowMs;
+      const bOverdue = bDeadline !== null && bDeadline < nowMs;
+
+      if (aOverdue !== bOverdue) return aOverdue ? -1 : 1;
+      if (aOverdue && bOverdue) return (aDeadline || 0) - (bDeadline || 0);
+
+      if (aDeadline !== null && bDeadline !== null) return aDeadline - bDeadline;
+      if (aDeadline !== null && bDeadline === null) return -1;
+      if (aDeadline === null && bDeadline !== null) return 1;
+
+      const scoreDiff = (b.dynamicScore || 0) - (a.dynamicScore || 0);
+      if (scoreDiff !== 0) return scoreDiff;
+
+      const weightDiff = (priorityWeight[b.priority] || 2) - (priorityWeight[a.priority] || 2);
+      if (weightDiff !== 0) return weightDiff;
+
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    });
+
     return NextResponse.json({ tasks: tasksWithScores });
   } catch (err: any) {
     console.error("GET /api/tasks error:", err);

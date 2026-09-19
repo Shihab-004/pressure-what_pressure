@@ -35,6 +35,9 @@ export function useApi() {
     if (!isGet) {
       if (url.startsWith("/api/tasks")) clearApiCache("/api/tasks");
       else if (url.startsWith("/api/goals")) clearApiCache("/api/goals");
+      else if (url.startsWith("/api/projects")) clearApiCache("/api/projects");
+      else if (url.startsWith("/api/learning")) clearApiCache("/api/learning");
+      else if (url.startsWith("/api/ideas")) clearApiCache("/api/ideas");
       else if (url.startsWith("/api/planner")) clearApiCache("/api/planner");
       else clearApiCache();
     }

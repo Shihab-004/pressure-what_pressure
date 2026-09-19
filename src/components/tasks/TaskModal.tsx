@@ -14,6 +14,10 @@ interface TaskModalProps {
   onSaved: () => void;
   taskToEdit?: ITask | null;
   defaultDate?: string | null;
+  defaultProjectId?: string | null;
+  defaultGoalId?: string | null;
+  defaultTitle?: string | null;
+  defaultCategory?: TaskCategory | null;
   existingTasks?: ITask[];
 }
 
@@ -23,11 +27,17 @@ export function TaskModal({
   onSaved,
   taskToEdit,
   defaultDate,
+  defaultProjectId,
+  defaultGoalId,
+  defaultTitle,
+  defaultCategory,
   existingTasks = [],
 }: TaskModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<TaskCategory>("Personal");
+  const [projectId, setProjectId] = useState<string>("");
+  const [goalId, setGoalId] = useState<string>("");
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const [status, setStatus] = useState<TaskStatus>("inbox");
   const [estimatedMinutes, setEstimatedMinutes] = useState(45);
@@ -36,13 +46,31 @@ export function TaskModal({
   const [dependencies, setDependencies] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
+  // Available projects & goals
+  const [availableProjects, setAvailableProjects] = useState<any[]>([]);
+  const [availableGoals, setAvailableGoals] = useState<any[]>([]);
+
   const { apiFetch } = useApi();
+
+  useEffect(() => {
+    if (isOpen) {
+      // Load projects and goals for dropdowns
+      apiFetch("/api/projects").then(({ data }) => {
+        if (data?.projects) setAvailableProjects(data.projects);
+      });
+      apiFetch("/api/goals").then(({ data }) => {
+        if (data?.goals) setAvailableGoals(data.goals);
+      });
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (taskToEdit) {
       setTitle(taskToEdit.title);
       setDescription(taskToEdit.description || "");
       setCategory(taskToEdit.category);
+      setProjectId(taskToEdit.projectId || "");
+      setGoalId(taskToEdit.goalId || "");
       setPriority(taskToEdit.priority);
       setStatus(taskToEdit.status);
       setEstimatedMinutes(taskToEdit.estimatedMinutes || 45);
@@ -50,9 +78,11 @@ export function TaskModal({
       setScheduledDate(taskToEdit.scheduledDate || "");
       setDependencies(taskToEdit.dependencies || []);
     } else {
-      setTitle("");
+      setTitle(defaultTitle || "");
       setDescription("");
-      setCategory("Personal");
+      setCategory(defaultCategory || "Personal");
+      setProjectId(defaultProjectId || "");
+      setGoalId(defaultGoalId || "");
       setPriority("medium");
       setStatus("inbox");
       setEstimatedMinutes(45);
@@ -60,7 +90,7 @@ export function TaskModal({
       setScheduledDate(defaultDate || "");
       setDependencies([]);
     }
-  }, [taskToEdit, isOpen, defaultDate]);
+  }, [taskToEdit, isOpen, defaultDate, defaultProjectId, defaultGoalId, defaultTitle, defaultCategory]);
 
   if (!isOpen) return null;
 
@@ -79,6 +109,8 @@ export function TaskModal({
       deadline: deadline ? new Date(deadline).toISOString() : null,
       scheduledDate: scheduledDate || null,
       dependencies,
+      projectId: projectId || null,
+      goalId: goalId || null,
     };
 
     let error;
@@ -190,6 +222,41 @@ export function TaskModal({
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
                 <option value="critical">Critical (Urgent)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Project & Goal Linkage */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold text-muted-foreground mb-1">Assign to Project</label>
+              <select
+                value={projectId}
+                onChange={(e) => setProjectId(e.target.value)}
+                className="w-full px-3 py-2 bg-secondary/50 border border-border/80 rounded-xl text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60"
+              >
+                <option value="">None (Standalone)</option>
+                {availableProjects.map((p) => (
+                  <option key={p._id} value={p._id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-semibold text-muted-foreground mb-1">Align with Goal</label>
+              <select
+                value={goalId}
+                onChange={(e) => setGoalId(e.target.value)}
+                className="w-full px-3 py-2 bg-secondary/50 border border-border/80 rounded-xl text-foreground focus:outline-none focus:ring-1 focus:ring-primary/60"
+              >
+                <option value="">None (Standalone)</option>
+                {availableGoals.map((g) => (
+                  <option key={g._id} value={g._id}>
+                    [{g.type}] {g.title}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

@@ -12,9 +12,8 @@ import { TasksView } from "@/components/tasks/TasksView";
 import { DailyPlannerView } from "@/components/planner/DailyPlannerView";
 import { WeeklyPlannerView } from "@/components/planner/WeeklyPlannerView";
 import { UniversityView } from "@/components/university/UniversityView";
-import { LearningRoadmapView } from "@/components/learning/LearningRoadmapView";
-import { ProjectsView } from "@/components/projects/ProjectsView";
-import { GoalHierarchyView } from "@/components/goals/GoalHierarchyView";
+import { GrowthHubView } from "@/components/growth/GrowthHubView";
+import { IdeasVaultView } from "@/components/ideas/IdeasVaultView";
 import { AnalyticsView } from "@/components/analytics/AnalyticsView";
 import { SettingsView } from "@/components/settings/SettingsView";
 
@@ -56,6 +55,10 @@ export function AppShell() {
   const [taskToReschedule, setTaskToReschedule] = useState<ITask | null>(null);
   const [taskToEdit, setTaskToEdit] = useState<ITask | null>(null);
   const [defaultTaskDate, setDefaultTaskDate] = useState<string | null>(null);
+  const [defaultTaskProjectId, setDefaultTaskProjectId] = useState<string | null>(null);
+  const [defaultTaskGoalId, setDefaultTaskGoalId] = useState<string | null>(null);
+  const [defaultTaskTitle, setDefaultTaskTitle] = useState<string | null>(null);
+  const [defaultTaskCategory, setDefaultTaskCategory] = useState<string | null>(null);
 
   const { apiFetch } = useApi();
 
@@ -70,12 +73,14 @@ export function AppShell() {
   }
 
   useEffect(() => {
-    loadTasksForShell();
+    if (!authLoading && (user || firebaseUser)) {
+      loadTasksForShell();
+    }
     const unsubscribe = taskSync.subscribe(() => {
       loadTasksForShell();
     });
     return unsubscribe;
-  }, []);
+  }, [authLoading, user, firebaseUser]);
 
   useEffect(() => {
     if (!authLoading && !user && !firebaseUser) {
@@ -132,6 +137,8 @@ export function AppShell() {
     else if (actionId === "nav_tasks") setCurrentTab("tasks");
     else if (actionId === "nav_planner") setCurrentTab("planner");
     else if (actionId === "nav_university") setCurrentTab("university");
+    else if (actionId === "nav_growth") setCurrentTab("growth");
+    else if (actionId === "nav_ideas") setCurrentTab("ideas");
     else if (actionId === "nav_learning") setCurrentTab("learning");
     else if (actionId === "nav_projects") setCurrentTab("projects");
     else if (actionId === "nav_goals") setCurrentTab("goals");
@@ -267,16 +274,53 @@ export function AppShell() {
             </div>
           )}
 
-          {currentTab === "projects" && <ProjectsView />}
-          {currentTab === "learning" && (
-            <LearningRoadmapView
-              onOpenNewTask={() => {
+          {(currentTab === "growth" || currentTab === "projects" || currentTab === "learning" || currentTab === "goals") && (
+            <GrowthHubView
+              initialTab={
+                currentTab === "learning" ? "learning" : currentTab === "goals" ? "goals" : "projects"
+              }
+              onStartFocus={(task) => setFocusTask(task as any)}
+              onOpenTaskModal={(params) => {
                 setTaskToEdit(null);
+                setDefaultTaskDate(null);
+                setDefaultTaskProjectId(params?.projectId || null);
+                setDefaultTaskGoalId(params?.goalId || null);
+                setDefaultTaskTitle(params?.title || null);
+                setDefaultTaskCategory((params?.category as any) || null);
                 setIsNewTaskOpen(true);
               }}
             />
           )}
-          {currentTab === "goals" && <GoalHierarchyView />}
+
+          {currentTab === "ideas" && (
+            <IdeasVaultView
+              onConvertToTask={(idea) => {
+                setTaskToEdit(null);
+                setDefaultTaskDate(null);
+                setDefaultTaskProjectId(null);
+                setDefaultTaskGoalId(null);
+                setDefaultTaskTitle(idea.title);
+                setDefaultTaskCategory(idea.category as any);
+                setIsNewTaskOpen(true);
+              }}
+              onConvertToProject={async (idea) => {
+                const { data, error } = await apiFetch("/api/projects", {
+                  method: "POST",
+                  body: JSON.stringify({
+                    name: idea.title,
+                    description: idea.description || "",
+                    category: idea.category || "Rover",
+                  }),
+                });
+                if (error) {
+                  toast.error(error);
+                } else {
+                  toast.success(`Project "${idea.title}" created from idea!`);
+                  setCurrentTab("growth");
+                }
+              }}
+            />
+          )}
           {currentTab === "university" && (
             <UniversityView
               onStartFocus={(task) => setFocusTask(task)}
@@ -340,11 +384,19 @@ export function AppShell() {
         isOpen={isNewTaskOpen}
         taskToEdit={taskToEdit}
         defaultDate={defaultTaskDate}
+        defaultProjectId={defaultTaskProjectId}
+        defaultGoalId={defaultTaskGoalId}
+        defaultTitle={defaultTaskTitle}
+        defaultCategory={defaultTaskCategory as any}
         existingTasks={allPendingTasks}
         onClose={() => {
           setIsNewTaskOpen(false);
           setTaskToEdit(null);
           setDefaultTaskDate(null);
+          setDefaultTaskProjectId(null);
+          setDefaultTaskGoalId(null);
+          setDefaultTaskTitle(null);
+          setDefaultTaskCategory(null);
         }}
         onSaved={loadTasksForShell}
       />

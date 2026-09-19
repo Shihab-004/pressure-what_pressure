@@ -7,6 +7,8 @@ import {
   Calendar,
   LayoutGrid,
   Plus,
+  Layers,
+  Lightbulb,
   GraduationCap,
   FolderKanban,
   Compass,
@@ -44,6 +46,8 @@ export function MobileNav({
   // Check if current tab is one of the secondary Hub sections
   const isHubActive = [
     "university",
+    "growth",
+    "ideas",
     "projects",
     "learning",
     "goals",
@@ -53,10 +57,9 @@ export function MobileNav({
   ].includes(currentTab);
 
   const hubItems = [
+    { id: "growth", label: "Growth & Projects", desc: "Initiatives & Skills", icon: Layers },
+    { id: "ideas", label: "Idea Vault", desc: "Creative Breakthroughs", icon: Lightbulb },
     { id: "university", label: "University", desc: "Courses & Exams", icon: GraduationCap },
-    { id: "projects", label: "Projects", desc: "Pipelines & Work", icon: FolderKanban },
-    { id: "learning", label: "Learning", desc: "Roadmaps & Skills", icon: Compass },
-    { id: "goals", label: "Goals", desc: "Target Hierarchy", icon: Target },
     { id: "analytics", label: "Analytics", desc: "Time & Variance", icon: BarChart3 },
     { id: "review", label: "Daily Review", desc: "Evening Closeout", icon: FileCheck },
     { id: "settings", label: "Settings", desc: "Preferences", icon: Settings },

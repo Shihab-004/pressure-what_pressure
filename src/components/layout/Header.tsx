@@ -26,7 +26,7 @@ export function Header({
   const isAuthenticated = Boolean(user || firebaseUser);
 
   return (
-    <header className="h-14 border-b border-border/80 bg-card/75 backdrop-blur-xl px-3 sm:px-6 flex items-center justify-between sticky top-0 z-20 transition-all">
+    <header className="h-14 border-b border-border/80 bg-card/75 backdrop-blur-xl px-2.5 sm:px-6 flex items-center justify-between sticky top-0 z-20 transition-all">
       {/* Mobile Brand & Global Command Search */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
         {/* Mobile brand emblem */}
@@ -36,11 +36,12 @@ export function Header({
           </div>
         </div>
 
-        {/* Global Search & Command Palette Trigger */}
+        {/* Global Search & Command Palette Trigger (compact on mobile) */}
         <button
           type="button"
           onClick={onOpenCommandPalette}
-          className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 h-8 rounded-lg bg-secondary/50 hover:bg-secondary border border-border/80 text-xs text-muted-foreground hover:text-foreground transition-all duration-150 shadow-2xs group flex-1 max-w-[130px] xs:max-w-[170px] sm:max-w-none"
+          className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 h-8 rounded-lg bg-secondary/50 hover:bg-secondary border border-border/80 text-xs text-muted-foreground hover:text-foreground transition-all duration-150 shadow-2xs group flex-1 max-w-[110px] xs:max-w-[150px] sm:max-w-none"
+          title="Search or command palette (Ctrl+K)"
         >
           <Search className="w-3.5 h-3.5 group-hover:text-primary transition-colors flex-shrink-0" />
           <span className="hidden sm:inline truncate text-left font-sans">Search or command...</span>
@@ -53,20 +54,20 @@ export function Header({
 
       {/* Action Suite & User Profile / Sign In */}
       <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-        {/* Spider-Sense Decision Engine (Compact icon on mobile, full badge on tablet/desktop) */}
+        {/* Spider-Sense Decision Engine */}
         <button
           type="button"
           onClick={onTriggerWhatNow}
           className="spider-btn-primary spider-btn-sm h-8 px-2 sm:px-3 flex items-center justify-center gap-1.5 font-display font-bold shadow-glow-crimson-sm group cursor-pointer active:scale-95 transition-all"
-          title="Spider-Sense Decision Engine (F)"
-          aria-label="Spider-Sense Decision Engine"
+          title="Decision Engine: What should I do right now? (F)"
+          aria-label="Decision Engine"
         >
           <span className="relative flex h-2 w-2 flex-shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
           </span>
           <Zap className="w-3.5 h-3.5 fill-current text-amber-300 group-hover:rotate-12 transition-transform flex-shrink-0" />
-          <span className="hidden sm:inline text-xs">Decision Engine</span>
+          <span className="hidden md:inline text-xs">Decision Engine</span>
         </button>
 
         {/* Brain Dump Action */}
@@ -74,22 +75,23 @@ export function Header({
           type="button"
           onClick={onOpenBrainDump}
           className="spider-btn-secondary spider-btn-sm h-8 px-2 sm:px-3 flex items-center justify-center gap-1.5 flex-shrink-0"
-          title="Brain Dump (B)"
-          aria-label="Capture"
+          title="Fast Brain Dump (B)"
+          aria-label="Quick Capture"
         >
           <Brain className="w-3.5 h-3.5 text-primary flex-shrink-0" />
           <span className="hidden md:inline text-xs">Capture</span>
         </button>
 
-        {/* Overwhelm Sanctuary Trigger (desktop & tablet) */}
+        {/* Calm Mode Trigger (Formerly Sanctuary) */}
         <button
           type="button"
           onClick={onToggleOverwhelm}
-          className="hidden lg:inline-flex spider-btn-secondary spider-btn-sm border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/60"
-          title="Overwhelm Sanctuary"
+          className="spider-btn-secondary spider-btn-sm h-8 px-2 sm:px-3 border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/60 flex items-center justify-center gap-1.5 flex-shrink-0"
+          title="Calm Mode: Hide all clutter and show only 2-3 vital tasks"
+          aria-label="Calm Mode"
         >
-          <ShieldAlert className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="text-[11px]">Sanctuary</span>
+          <ShieldAlert className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+          <span className="hidden lg:inline text-[11px] font-semibold">Calm Mode</span>
         </button>
 
         {/* User Authentication: Avatar if logged in, Sign In tag/button if not logged in */}
@@ -119,11 +121,11 @@ export function Header({
           <button
             type="button"
             onClick={onOpenAuth}
-            className="spider-btn-primary spider-btn-sm h-8 flex items-center gap-1.5 px-2.5 sm:px-3 ml-0.5 sm:ml-1 text-xs cursor-pointer shadow-glow-crimson-sm"
+            className="spider-btn-primary spider-btn-sm h-8 flex items-center gap-1.5 px-2 sm:px-3 ml-0.5 sm:ml-1 text-xs cursor-pointer shadow-glow-crimson-sm"
             title="Sign in with Google"
           >
             <LogIn className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span className="hidden xs:inline sm:inline">Sign In</span>
+            <span className="hidden sm:inline">Sign In</span>
           </button>
         )}
       </div>

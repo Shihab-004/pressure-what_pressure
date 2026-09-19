@@ -373,7 +373,11 @@ export function CommandCenter({
 
           {/* Current Goal Progress */}
           {currentGoal && (
-            <div className="spider-card p-5 space-y-3">
+            <div
+              onClick={() => onNavigateTab("growth")}
+              className="spider-card p-5 space-y-3 cursor-pointer hover:border-primary/50 transition-all"
+              title="Click to view all goals and projects"
+            >
               <div className="flex items-center justify-between text-xs">
                 <span className="font-display font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <Target className="w-3.5 h-3.5 text-primary" />
@@ -397,14 +401,15 @@ export function CommandCenter({
             </div>
           )}
 
-          {/* OVERWHELM SANCTUARY ACTION */}
+          {/* CALM MODE (DE-STRESS ACTION) */}
           <button
             type="button"
             onClick={onOpenOverwhelm}
             className="spider-btn-secondary w-full py-3 px-4 border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/60 flex items-center justify-center gap-2 group"
+            title="Calm Mode: Hide all clutter and focus on 2-3 vital tasks"
           >
             <ShieldAlert className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
-            <span>Overwhelm Sanctuary</span>
+            <span>Calm Mode (De-Stress)</span>
           </button>
         </div>
       </div>

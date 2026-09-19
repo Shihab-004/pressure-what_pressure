@@ -15,14 +15,12 @@ import {
   BookOpen,
   CheckCircle2,
   RefreshCw,
-  Zap,
   ShieldAlert,
 } from "lucide-react";
 import { ITask, IGoal } from "@/types";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useApi } from "@/lib/api/useApi";
 import { formatMinutes, formatDateLabel } from "@/lib/utils";
-import { QuickAddBar } from "@/components/tasks/QuickAddBar";
 import { SpiderLogo } from "@/components/icons/SpiderLogo";
 import { format } from "date-fns";
 import { taskSync } from "@/lib/events/taskSync";
@@ -63,15 +61,20 @@ export function CommandCenter({
   async function loadDashboardData(silent = false) {
     if (!silent) setLoading(true);
 
-    // 1. Load today's tasks
-    const todayRes = await apiFetch("/api/tasks/today");
+    // Fetch all dashboard data concurrently in parallel
+    const [todayRes, overdueRes, tasksRes, goalsRes] = await Promise.all([
+      apiFetch("/api/tasks/today"),
+      apiFetch("/api/tasks/overdue"),
+      apiFetch("/api/tasks"),
+      apiFetch("/api/goals"),
+    ]);
+
+    // 1. Set today's data
     if (todayRes.data) {
       setTodayData(todayRes.data);
     }
 
-    // 2. Load overdue & attention
-    const overdueRes = await apiFetch("/api/tasks/overdue");
-    const tasksRes = await apiFetch("/api/tasks");
+    // 2. Set overdue & attention data
     if (tasksRes.data?.tasks) {
       const all: ITask[] = tasksRes.data.tasks;
       const carried = all.filter((t) => (t.carryOverCount || 0) > 0 && t.status !== "completed");
@@ -92,8 +95,7 @@ export function CommandCenter({
       });
     }
 
-    // 3. Load active goals
-    const goalsRes = await apiFetch("/api/goals");
+    // 3. Set active goal
     if (goalsRes.data?.goals && goalsRes.data.goals.length > 0) {
       const active = goalsRes.data.goals.find((g: any) => g.status === "active");
       setCurrentGoal(active || goalsRes.data.goals[0]);
@@ -114,38 +116,17 @@ export function CommandCenter({
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Top Banner & Greetings */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
         <div>
           <div className="text-[11px] font-display font-bold uppercase tracking-widest text-muted-foreground mb-1 flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-primary inline-block shadow-glow-crimson animate-pulse" />
             <span className="hidden sm:inline">EXECUTIVE BRIEF · </span>
             <span>{todayFormatted}</span>
           </div>
-          <h1 className="text-xl sm:text-3xl font-display font-extrabold tracking-tight text-foreground flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-extrabold tracking-tight text-foreground flex items-center gap-2">
             Welcome back, <span className="text-foreground">{user?.name?.split(" ")[0] || "Operator"}</span>
           </h1>
         </div>
-
-        {/* Signature Action: WHAT SHOULD I DO NOW */}
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <button
-            type="button"
-            onClick={onTriggerWhatShouldIDo}
-            className="spider-btn-primary group w-full sm:w-auto justify-center"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
-            </span>
-            <Zap className="w-3.5 h-3.5 fill-current text-amber-300 group-hover:rotate-12 transition-transform" />
-            <span>What Should I Do Now?</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Quick Add Bar */}
-      <div className="spider-card p-2">
-        <QuickAddBar onTaskCreated={loadDashboardData} />
       </div>
 
       {/* Main Grid Layout */}
@@ -220,7 +201,7 @@ export function CommandCenter({
               <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
               <p className="text-sm font-display font-bold text-foreground">Zero Critical Bottlenecks</p>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                No immediate tasks scheduled for today. Capture new targets using the Quick Bar above.
+                No immediate tasks scheduled for today. Tap the (+) button to create a new target.
               </p>
             </div>
           )}

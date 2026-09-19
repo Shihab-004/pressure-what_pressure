@@ -6,7 +6,6 @@ import { ITask } from "@/types";
 import { useApi } from "@/lib/api/useApi";
 import { toast } from "sonner";
 import { TaskCard } from "./TaskCard";
-import { QuickAddBar } from "./QuickAddBar";
 import { isTaskBlocked } from "@/lib/engine/recommendationEngine";
 import { SpiderLogo } from "@/components/icons/SpiderLogo";
 import { taskSync } from "@/lib/events/taskSync";
@@ -155,11 +154,6 @@ export function TasksView({
           <Plus className="w-4 h-4 stroke-[2.5]" />
           <span>New Task</span>
         </button>
-      </div>
-
-      {/* Quick Add Bar */}
-      <div className="spider-card p-2">
-        <QuickAddBar onTaskCreated={loadTasks} />
       </div>
 
       {/* Filter Tabs & Search Bar */}

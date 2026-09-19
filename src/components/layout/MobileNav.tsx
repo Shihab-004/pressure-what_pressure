@@ -120,11 +120,11 @@ export function MobileNav({
             <button
               type="button"
               onClick={onOpenQuickAdd}
-              className="w-13 h-13 -mt-6 rounded-full bg-gradient-to-tr from-primary via-red-600 to-rose-600 hover:from-primary/90 hover:to-rose-500 text-white flex items-center justify-center shadow-glow-crimson border-4 border-card active:scale-90 hover:scale-105 transition-all cursor-pointer select-none"
+              className="w-12 h-12 -mt-5 rounded-full bg-gradient-to-tr from-primary via-red-600 to-rose-600 hover:from-primary/90 hover:to-rose-500 text-white flex items-center justify-center shadow-glow-crimson border-4 border-card active:scale-90 hover:scale-105 transition-all cursor-pointer select-none"
               aria-label="Create New Task"
               title="Quick Add Task"
             >
-              <Plus className="w-6 h-6 stroke-[3]" />
+              <Plus className="w-5 h-5 stroke-[3]" />
             </button>
           </div>
 
@@ -222,6 +222,7 @@ export function MobileNav({
                         <img
                           src={avatarUrl}
                           alt={displayName}
+                          referrerPolicy="no-referrer"
                           className="w-full h-full object-cover"
                         />
                       ) : (

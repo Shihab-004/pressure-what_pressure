@@ -104,7 +104,12 @@ export function Sidebar({ currentTab, onSelectTab, onOpenAuth }: SidebarProps) {
               <div className="relative flex-shrink-0">
                 <div className="w-8 h-8 rounded-full bg-primary/20 text-primary border border-primary/40 flex items-center justify-center text-xs font-display font-bold overflow-hidden shadow-xs">
                   {avatarUrl ? (
-                    <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                    <img
+                      src={avatarUrl}
+                      alt={displayName}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     displayName.charAt(0) || "U"
                   )}

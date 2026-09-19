@@ -117,7 +117,12 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <div className="relative inline-block mx-auto">
               <div className="w-20 h-20 rounded-full bg-primary/20 text-primary border-2 border-primary/50 flex items-center justify-center text-2xl font-display font-black overflow-hidden shadow-glow-crimson mx-auto">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                  <img
+                    src={avatarUrl}
+                    alt={displayName}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   displayName.charAt(0) || "U"
                 )}

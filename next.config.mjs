@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   experimental: {
-    // optimize packages
+    optimizePackageImports: ["lucide-react", "date-fns"],
   },
 };
 

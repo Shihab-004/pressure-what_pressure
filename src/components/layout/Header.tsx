@@ -28,8 +28,8 @@ export function Header({
   return (
     <header className="h-14 border-b border-border/80 bg-card/75 backdrop-blur-xl px-3 sm:px-6 flex items-center justify-between sticky top-0 z-20 transition-all">
       {/* Mobile Brand & Global Command Search */}
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-        {/* Mobile-only logo */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
+        {/* Mobile brand emblem */}
         <div className="flex items-center gap-2 md:hidden flex-shrink-0">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-rose-700 flex items-center justify-center text-white shadow-glow-crimson-sm border border-red-400/30">
             <SpiderLogo className="w-4 h-4 text-white fill-white" />
@@ -40,7 +40,7 @@ export function Header({
         <button
           type="button"
           onClick={onOpenCommandPalette}
-          className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-lg bg-secondary/50 hover:bg-secondary border border-border/80 text-xs text-muted-foreground hover:text-foreground transition-all duration-150 shadow-2xs group"
+          className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 h-8 rounded-lg bg-secondary/50 hover:bg-secondary border border-border/80 text-xs text-muted-foreground hover:text-foreground transition-all duration-150 shadow-2xs group flex-1 max-w-[130px] xs:max-w-[170px] sm:max-w-none"
         >
           <Search className="w-3.5 h-3.5 group-hover:text-primary transition-colors flex-shrink-0" />
           <span className="hidden sm:inline truncate text-left font-sans">Search or command...</span>
@@ -53,41 +53,43 @@ export function Header({
 
       {/* Action Suite & User Profile / Sign In */}
       <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-        {/* Brain Dump Action */}
-        <button
-          type="button"
-          onClick={onOpenBrainDump}
-          className="spider-btn-secondary spider-btn-sm px-2.5 sm:px-3"
-          title="Brain Dump (B)"
-        >
-          <Brain className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-          <span className="hidden sm:inline">Capture</span>
-        </button>
-
-        {/* What Should I Do Now (Signature Engine with Spider-Sense radar pulse) */}
+        {/* Spider-Sense Decision Engine (Compact icon on mobile, full badge on tablet/desktop) */}
         <button
           type="button"
           onClick={onTriggerWhatNow}
-          className="spider-btn-primary spider-btn-sm px-2.5 sm:px-3.5"
+          className="spider-btn-primary spider-btn-sm h-8 px-2 sm:px-3 flex items-center justify-center gap-1.5 font-display font-bold shadow-glow-crimson-sm group cursor-pointer active:scale-95 transition-all"
           title="Spider-Sense Decision Engine (F)"
+          aria-label="Spider-Sense Decision Engine"
         >
           <span className="relative flex h-2 w-2 flex-shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
           </span>
           <Zap className="w-3.5 h-3.5 fill-current text-amber-300 group-hover:rotate-12 transition-transform flex-shrink-0" />
-          <span className="hidden md:inline">What Now?</span>
+          <span className="hidden sm:inline text-xs">Decision Engine</span>
+        </button>
+
+        {/* Brain Dump Action */}
+        <button
+          type="button"
+          onClick={onOpenBrainDump}
+          className="spider-btn-secondary spider-btn-sm h-8 px-2 sm:px-3 flex items-center justify-center gap-1.5 flex-shrink-0"
+          title="Brain Dump (B)"
+          aria-label="Capture"
+        >
+          <Brain className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+          <span className="hidden md:inline text-xs">Capture</span>
         </button>
 
         {/* Overwhelm Sanctuary Trigger (desktop & tablet) */}
         <button
           type="button"
           onClick={onToggleOverwhelm}
-          className="hidden sm:inline-flex spider-btn-secondary spider-btn-sm border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/60"
+          className="hidden lg:inline-flex spider-btn-secondary spider-btn-sm border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:border-emerald-500/60"
           title="Overwhelm Sanctuary"
         >
           <ShieldAlert className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="hidden lg:inline text-[11px]">Sanctuary</span>
+          <span className="text-[11px]">Sanctuary</span>
         </button>
 
         {/* User Authentication: Avatar if logged in, Sign In tag/button if not logged in */}
@@ -95,7 +97,7 @@ export function Header({
           <button
             type="button"
             onClick={onOpenAuth}
-            className="relative p-0.5 rounded-full hover:ring-2 hover:ring-primary/60 transition-all active:scale-95 flex-shrink-0 cursor-pointer ml-1"
+            className="relative p-0.5 rounded-full hover:ring-2 hover:ring-primary/60 transition-all active:scale-95 flex-shrink-0 cursor-pointer ml-0.5 sm:ml-1"
             title={`${displayName} (${user?.email || firebaseUser?.email || ""})`}
             aria-label="Account Settings"
           >
@@ -104,6 +106,7 @@ export function Header({
                 <img
                   src={avatarUrl}
                   alt={displayName}
+                  referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -116,11 +119,11 @@ export function Header({
           <button
             type="button"
             onClick={onOpenAuth}
-            className="spider-btn-primary spider-btn-sm flex items-center gap-1.5 px-3 py-1.5 ml-1 text-xs cursor-pointer shadow-glow-crimson-sm"
+            className="spider-btn-primary spider-btn-sm h-8 flex items-center gap-1.5 px-2.5 sm:px-3 ml-0.5 sm:ml-1 text-xs cursor-pointer shadow-glow-crimson-sm"
             title="Sign in with Google"
           >
             <LogIn className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>Sign In</span>
+            <span className="hidden xs:inline sm:inline">Sign In</span>
           </button>
         )}
       </div>

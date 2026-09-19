@@ -75,7 +75,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       if (res.ok) {
         const data = await res.json();
-        setUser(data.user);
+        if (data?.user) {
+          setUser((prev) => ({
+            ...data.user,
+            avatar: data.user.avatar || prev?.avatar || firebaseUser?.photoURL || undefined,
+            name: data.user.name || prev?.name || firebaseUser?.displayName || "Operator",
+          }));
+        }
       }
     } catch (err) {
       console.warn("Failed to fetch user profile:", err);
@@ -156,13 +162,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             theme: "dark",
           },
         } as any);
-        const token = await fbUser.getIdToken();
-        await fetchUserProfile(token);
+        setLoading(false);
+        fbUser.getIdToken().then((token) => {
+          if (token) fetchUserProfile(token);
+        }).catch((err) => console.warn("Failed to get token:", err));
       } else {
         setIsDemoUser(false);
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();

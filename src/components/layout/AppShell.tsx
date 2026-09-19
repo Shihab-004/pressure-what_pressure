@@ -75,7 +75,7 @@ export function AppShell() {
       loadTasksForShell();
     });
     return unsubscribe;
-  }, [currentTab]);
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user && !firebaseUser) {
@@ -186,7 +186,7 @@ export function AppShell() {
           onOpenAuth={() => setIsAuthOpen(true)}
         />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 p-3 sm:p-6 lg:p-8 overflow-y-auto">
           {currentTab === "dashboard" && (
             <CommandCenter
               onTriggerWhatShouldIDo={() => setIsWhatNowOpen(true)}

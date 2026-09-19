@@ -115,6 +115,20 @@ export async function getAuthenticatedUser(
     
     // 1. Check by Firebase UID
     let userDoc = await User.findOne({ firebaseUid });
+    if (userDoc) {
+      let updated = false;
+      if (avatar && userDoc.avatar !== avatar) {
+        userDoc.avatar = avatar;
+        updated = true;
+      }
+      if (name && (!userDoc.name || userDoc.name === "User") && name !== "User") {
+        userDoc.name = name;
+        updated = true;
+      }
+      if (updated) {
+        await userDoc.save();
+      }
+    }
 
     // 2. If not found by UID, check by email to reuse existing account
     if (!userDoc && email) {
@@ -153,7 +167,7 @@ export async function getAuthenticatedUser(
       firebaseUid: userDoc.firebaseUid,
       email: userDoc.email,
       name: userDoc.name,
-      avatar: userDoc.avatar,
+      avatar: userDoc.avatar || avatar,
       preferences: {
         workDays: userDoc.preferences?.workDays || [0, 1, 2, 3, 4],
         dailyWorkHours: userDoc.preferences?.dailyWorkHours || 5.5,

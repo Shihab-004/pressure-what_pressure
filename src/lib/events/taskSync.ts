@@ -17,6 +17,8 @@ export interface TaskSyncEvent {
 
 type TaskSyncCallback = (event?: TaskSyncEvent) => void;
 
+import { clearApiCache } from "@/lib/api/useApi";
+
 class TaskSyncBus {
   private listeners = new Set<TaskSyncCallback>();
 
@@ -36,6 +38,7 @@ class TaskSyncBus {
    * to immediately synchronize without a manual page refresh.
    */
   notify(event: TaskSyncEvent = { type: "workspace:refresh" }) {
+    clearApiCache();
     this.listeners.forEach((cb) => {
       try {
         cb(event);
